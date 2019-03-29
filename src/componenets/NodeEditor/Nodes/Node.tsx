@@ -47,7 +47,9 @@ const Node = styled.div`
     }
     
 `;
-class BaseNode extends React.Component{
+interface NodeProps { top: number, left: number }
+interface NodeState { top: string, left: string }
+class BaseNode extends React.Component<NodeProps,NodeState>{
     elmnt: HTMLElement;
     pos1: number;
     pos2: number;
@@ -63,6 +65,11 @@ class BaseNode extends React.Component{
         this.pos2 = 0;
         this.pos3 = 0;
         this.pos4 = 0;
+
+        this.state = {
+            top: `${this.props.top}px`,
+            left: `${this.props.left}px`
+        }
     }
     dragmousedown(e){
         e = e || window.event;
@@ -84,8 +91,10 @@ class BaseNode extends React.Component{
         this.pos4 = e.clientY;
         // set the element's new position:
         if(this.self instanceof HTMLElement){
-            this.self.style.top = (this.self.offsetTop - this.pos2) + "px";
-            this.self.style.left = (this.self.offsetLeft - this.pos1) + "px";
+            this.setState({
+                top: `${this.self.offsetTop - this.pos2}px`,
+                left: `${this.self.offsetLeft - this.pos1}px`
+            });
         }
 
       }
@@ -104,7 +113,7 @@ class BaseNode extends React.Component{
     render() {
         return (
 
-        <Node style={{top:'80px',left:'0px'}}>
+            <Node style={{ top: this.state.top, left: this.state.left }}>
             <div id="title"><p>Range</p></div>
             <div id="outputs">
                 <div id="output">
@@ -116,6 +125,10 @@ class BaseNode extends React.Component{
 
         )
     }
+    static defaultProps = {
+        top: 80,
+        left: 0
+    };
 }
 
 export default BaseNode;

@@ -60,7 +60,7 @@ class NodeEditor extends React.Component<{},State>{
     render() {
         return (
             <Editor id="Editor">
-                <BaseNode/>
+                <BaseNode left={250} top={80}/>
                 <BaseNode/>
                 <ContextMenu left={this.state.contextMenuLeft} top={this.state.contextMenuTop} show={this.state.showContextMenu}/> 
             </Editor>

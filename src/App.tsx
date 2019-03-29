@@ -15,7 +15,7 @@ const Hero = styled.div`
   :after{
     content:'';
     
-  background: black;
+  background: #b0744e;
   background-size: cover;
   background-position: left 0px top -53px;
     position: fixed;
