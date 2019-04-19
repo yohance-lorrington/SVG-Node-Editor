@@ -2,6 +2,7 @@ import * as React from "react";
 import ContextMenu from './ContextMenu';
 import styled from 'styled-components';
 import BaseNode from './Nodes/Node';
+import BezierCurve from './BezierCurve/Bezier'; 
 interface State{
     contextMenuLeft: number,
     contextMenuTop: number,
@@ -56,11 +57,14 @@ class NodeEditor extends React.Component<{},State>{
                 this.setState({showContextMenu:false});
         });
     }
-    
+
     render() {
+
         return (
+
             <Editor id="Editor">
-                <BaseNode left={250} top={80}/>
+                <BaseNode left={250} top={80} />
+                <BezierCurve beginPointX={100} beginPointY={50} endPointX={250} endPointY={100} color="red"/>
                 <BaseNode/>
                 <ContextMenu left={this.state.contextMenuLeft} top={this.state.contextMenuTop} show={this.state.showContextMenu}/> 
             </Editor>
