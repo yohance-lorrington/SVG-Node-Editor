@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom";
 import InputRange from './Input';
 import styled from 'styled-components';
 
+
 const Node = styled.div`
     width: 200px;
     border-radius: 3px;
@@ -47,8 +48,21 @@ const Node = styled.div`
     }
     
 `;
-interface NodeProps { top: number, left: number }
+interface Connector {
+    type: string,
+    value: number
+}
+
+interface NodeProps {
+    top: number,
+    left: number,
+    inputs?: Map<string,Connector>,
+    outputs?: Map<string,Connector>
+}
+
 interface NodeState { top: string, left: string }
+
+
 class BaseNode extends React.Component<NodeProps,NodeState>{
     elmnt: HTMLElement;
     pos1: number;
@@ -71,6 +85,10 @@ class BaseNode extends React.Component<NodeProps,NodeState>{
             left: `${this.props.left}px`
         }
     }
+    static defaultProps = {
+        top: 80,
+        left: 0
+    };
     dragmousedown(e){
         e = e || window.event;
         e.preventDefault();
@@ -125,10 +143,8 @@ class BaseNode extends React.Component<NodeProps,NodeState>{
 
         )
     }
-    static defaultProps = {
-        top: 80,
-        left: 0
-    };
+ 
+
 }
 
 export default BaseNode;
