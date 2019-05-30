@@ -3,13 +3,15 @@ import * as ReactDOM from "react-dom";
 import InputRange from './Input';
 import styled from 'styled-components';
 
-
+import BezierCurve from '../BezierCurve/Bezier'; 
 const Node = styled.div`
     width: 200px;
     border-radius: 3px;
     background: white;
     padding-bottom: 3px;
     position: absolute;
+    z-index: 1;
+    opacity: 0.7;
     #title p{
         padding: 5px;
         font-size: 0.9em;
@@ -60,11 +62,12 @@ interface NodeProps {
     outputs?: Map<string,Connector>
 }
 
-interface NodeState { top: string, left: string }
+interface NodeState { top: string, left: string, conTop: number, conLeft: number}
 
 
 class BaseNode extends React.Component<NodeProps,NodeState>{
     elmnt: HTMLElement;
+    nut: React.RefObject<HTMLDivElement>;
     pos1: number;
     pos2: number;
     pos3: number;
@@ -82,8 +85,12 @@ class BaseNode extends React.Component<NodeProps,NodeState>{
 
         this.state = {
             top: `${this.props.top}px`,
-            left: `${this.props.left}px`
+            left: `${this.props.left}px`,
+            conTop: 0,
+            conLeft: 0
         }
+        
+        this.nut =  React.createRef();
     }
     static defaultProps = {
         top: 80,
@@ -109,9 +116,12 @@ class BaseNode extends React.Component<NodeProps,NodeState>{
         this.pos4 = e.clientY;
         // set the element's new position:
         if(this.self instanceof HTMLElement){
+            const nice =  this.nut.current.getBoundingClientRect();
             this.setState({
                 top: `${this.self.offsetTop - this.pos2}px`,
-                left: `${this.self.offsetLeft - this.pos1}px`
+                left: `${this.self.offsetLeft - this.pos1}px`,                
+                conLeft: (nice.left+nice.right)/2,
+                conTop: (nice.top+nice.bottom)/2
             });
         }
 
@@ -127,20 +137,29 @@ class BaseNode extends React.Component<NodeProps,NodeState>{
             this.elmnt = this.self.querySelector("#title");
         }
         this.elmnt.onmousedown = this.dragmousedown.bind(this);
+        const nice =  this.nut.current.getBoundingClientRect();
+        console.log(nice);
+        this.setState({
+            conLeft: (nice.left+nice.right)/2,
+            conTop: (nice.top+nice.bottom)/2
+
+        })
+
     }
     render() {
         return (
-
+            <>
             <Node style={{ top: this.state.top, left: this.state.left }}>
-            <div id="title"><p>Range</p></div>
-            <div id="outputs">
-                <div id="output">
-                    <InputRange/>
-                    <div className="connector"></div>
+                <div id="title"><p>Range</p></div>
+                <div id="outputs">
+                    <div id="output">
+                        <InputRange/>
+                        <div ref={this.nut} className="connector"></div>
+                    </div>
                 </div>
-            </div>
-        </Node>
-
+            </Node>
+            <BezierCurve beginPointX={this.state.conLeft} beginPointY={this.state.conTop} endPointX={250} endPointY={100} color="white"/>
+            </>
         )
     }
  

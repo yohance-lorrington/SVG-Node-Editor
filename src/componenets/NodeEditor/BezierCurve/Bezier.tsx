@@ -12,6 +12,7 @@ const SVGContainer = styled.div`
     position: absolute;
     top: ${props =>props.y}px;
     left: ${props => props.x}px;
+    z-index: 0;
 `;
 const BezierCurve: React.SFC<BezierProps> = (props) => {
     let height: number = Math.abs(props.beginPointY - props.endPointY);
@@ -20,9 +21,9 @@ const BezierCurve: React.SFC<BezierProps> = (props) => {
     let smallestY: number = Math.min(props.beginPointY, props.endPointY);
  
     return (
-        <SVGContainer id="yeetHlp" x={smallestX} y={smallestY}>
+        <SVGContainer id="yeetHlp" >
             <svg xmlns="http://www.w3.org/2000/svg" height={`${height}`} style={{overflow: 'visible'}} viewBox={`0 0 ${width} ${height}`}>
-                <path d={`M0,${props.beginPointY - smallestY} C${width / 2},${props.beginPointY - smallestY} ${width / 2},${props.endPointY - smallestY} ${width},${props.endPointY - smallestY}`} strokeWidth="3" stroke={props.color} fill="none" />
+                <path d={`M${props.beginPointX},${props.beginPointY} C${(width / 2)+smallestX},${props.beginPointY } ${(width / 2)+smallestX},${props.endPointY } ${props.endPointX},${props.endPointY }`} strokeWidth="3" stroke={props.color} fill="none" />
             </svg>
 		</SVGContainer>
 			);
