@@ -51,10 +51,7 @@ class NodeEditor extends React.Component<{},State>{
         return (
             <Editor id="Editor">
                 <BaseNode/>
-                <BaseNode/>
-                <BaseNode/>
-                <BaseNode/>
-                <BaseNode/>
+        
             </Editor>
         )
     }
