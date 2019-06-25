@@ -47,7 +47,8 @@ class NodeEditor extends React.Component<{},State>{
         let multiply = new ASTNode([add, n2],function(){
             return this.inputs[0].resolve()*this.inputs[1].resolve();
         });
-        console.log(multiply.resolve())
+        console.log(multiply.resolve());
+        console.log('hellos')
         return (
             <Editor id="Editor">
                 <BaseNode/>

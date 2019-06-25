@@ -1,32 +1,26 @@
+
 export default class ASTNode{
     public resolve: Function;
     private inputs: ASTNode[];
     private errors: Boolean[];
     constructor(inputs:ASTNode[],resolveFunc: Function){
-        this.setInputs(inputs);
+        this.inputs = inputs;
         this.resolve = resolveFunc;
         this.errors = [];
         for(let i = 0; i < this.inputs.length; i++){
             this.errors[i] = false;
         }
     }
-    setErrorFlag(index: number):void{
+    setErrorFlag(index: number){
         this.errors[index] = true;
     }
-    clearErrorFlag(index: number):void{
+    clearErrorFlag(index: number){
         this.errors[index] = false;
     }
-    setInputs(inputs: ASTNode[]):void{
-        if(inputs == null) throw new TypeError("Should Not be null");
+    setInputs(inputs: ASTNode[]){
         this.inputs = inputs;
     }
-    setResolveFunction(resolveFunc: Function):void{
+    setResolveFunction(resolveFunc: Function){
         this.resolve = resolveFunc;
-    }
-    getInputs(): Array<ASTNode> {
-        return this.inputs;
-    }
-    getErrors(): Array<Boolean> {
-        return this.errors;
     }
 }
