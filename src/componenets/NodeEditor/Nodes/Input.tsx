@@ -10,19 +10,19 @@ const Range = styled.input`
     -webkit-appearance: none;
     background: #777;
     &::-webkit-slider-runnable-track {
-    -webkit-appearance: none;
-    margin-top: -1px;
+        -webkit-appearance: none;
+        margin-top: -1px;
     }
    &::-webkit-slider-thumb {
-    width: 0px;
-    -webkit-appearance: none;
-    box-shadow: -500px 0 0 500px #a05e5e;
+        width: 0px;
+        -webkit-appearance: none;
+        box-shadow: -500px 0 0 500px #a05e5e;
     }
     &:hover{
-    cursor: e-resize;
+        cursor: e-resize;
     }
     &:focus{
-    outline: none;
+        outline: none;
     }
 `;
 

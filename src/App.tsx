@@ -2,9 +2,9 @@ import * as React from 'react';
 import { Route, BrowserRouter as Router } from 'react-router-dom';
 import styled from 'styled-components';
 
-import Navbar from './componenets/navbar/navbar';
-import NodeEditor from './componenets/NodeEditor/Editor';
-
+import Navbar from './componenets/navbar/Navbar';
+import NodeEditor from './componenets/NodeEditor/Editor/Editor';
+//const homepage = require("../assets/Logo.svg");
 const Hero = styled.div`
   background: black;
   width: 100vw;
@@ -14,10 +14,9 @@ const Hero = styled.div`
   justify-content: center;
   :after{
     content:'';
-    
-  background: #b0744e;
-  background-size: cover;
-  background-position: left 0px top -53px;
+    background: black;
+    background-size: cover;
+    background-position: center top -53px;
     position: fixed;
     height: 100%;
     width: 100%;
