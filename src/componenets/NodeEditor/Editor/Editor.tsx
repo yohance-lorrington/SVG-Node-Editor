@@ -17,7 +17,11 @@ const NodeEditor: FunctionComponent = ()=>{
                     <g width="100%" height="100%" id="connections"></g>
                     <foreignObject width="100%" height="100%" style={{overflow: 'visible'}}>
                         <BaseNode top={100} left={50}/>
-                        <BaseNode top={100} left={250}/>
+                        <BaseNode top={100} left={350}/>
+                        <BaseNode top={250} left={200}/>
+                        <BaseNode top={200} left={550}/>
+                        <BaseNode top={350} left={200}/>
+                        <BaseNode top={500} left={550}/>
                     </foreignObject>
                 </g>
             </svg>
