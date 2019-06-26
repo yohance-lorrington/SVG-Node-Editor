@@ -12,7 +12,7 @@ const Node = styled.div`
         padding: 5px;
         font-size: 0.9em;
         border-radius: 3px 3px 0 0;
-        background: #eee;
+        background: #bbb;
         margin: 0;
     }
     .connections{

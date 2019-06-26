@@ -1,12 +1,13 @@
 import * as d3 from 'd3';
-import {UIScale,EditorState,currentConnection,ConnectionState} from './global';
+
+import {UIScale,EditorState,currentConnection,ConnectionState,saveConnection,resetConnectionState} from './global';
 const RADIUS_CONNECTOR = 5;
 export function d3Zoom(){
     const zoom = d3.zoom()
     .filter(function(){
         return d3.event.button === 1 || d3.event.buttons === 0;
     })
-    .scaleExtent([0.75, 5])
+    .scaleExtent([1, 5])
     .on('zoom', this.Editor ? zoomedE: zoomed);
 
     function zoomedE(){
@@ -23,6 +24,7 @@ export function d3Zoom(){
     const contentWrap = d3.select(this.ui);
     const svg = d3.select(this.svg);
     svg.call(zoom);
+    svg.on("dblclick.zoom", null);
 }
 
 export function d3Drag(){
@@ -44,8 +46,9 @@ export function d3Drag(){
         .on("drag", dragged);
     
     
+    
     const div = d3.select(this.dragTarget);
-    d3.select(this.handle).call(drag);
+    d3.select(this.handle.current).call(drag);
 }
 
 export function inputDraw(beginPos,index:number){
@@ -60,8 +63,11 @@ export function inputDraw(beginPos,index:number){
         currentConnection.lineObject = newcurrentConnection.lineObject;
         if(!!currentConnection.lineObject){
             currentConnection.lineObject = endInputConnection(beginPos,currentConnection.lineObject);
-            EditorState.Connections = saveConnection(currentConnection, EditorState.Connections);
+            if(isConnectionReferringToItself(currentConnection)){
+                removeCurrentLine(currentConnection);    
+            }
             removeMouseOnListener();
+            EditorState.Connections = saveConnection(currentConnection, EditorState.Connections);
             resetConnectionState(currentConnection);
         }    
     }
@@ -75,8 +81,11 @@ export function outputDraw(endPos){
         currentConnection.lineObject = newcurrentConnection.lineObject;
         if(!!currentConnection.lineObject){
             currentConnection.lineObject = endOutputConnection(endPos,currentConnection.lineObject);  
-            EditorState.Connections = saveConnection(currentConnection, EditorState.Connections);
+            if(isConnectionReferringToItself(currentConnection)){
+                removeCurrentLine(currentConnection);
+            }
             removeMouseOnListener();
+            EditorState.Connections = saveConnection(currentConnection, EditorState.Connections);
             resetConnectionState(currentConnection);
         }    
     }else{
@@ -85,51 +94,7 @@ export function outputDraw(endPos){
         
     }
 }
-/**
- * The method will take connection state and will return a new array of connections with the new connection state added. 
- * If the connection state is self-refering (its input and output are refering to eachother) the new array will be equal to  prevConnections.
- * @param connectionToSave connection state used to either add or updated to the previous connections 
- * @param prevConnections  array of previous connections
- * @returns	Array<ConnectionState> will return a new array with the connection state added or a new array with a modified element
- * 
- * @example  [dumbyThicc]= saveConnection(dumbyThicc, [])
- * @example [thicc, updatedThiccer]   = saveConnection(updatedThiccer,[thicc,thiccer])
- * 
- */
-export function saveConnection(connectionToSave:ConnectionState,prevConnections:Array<ConnectionState>){
-    
-    let copyOfCurrentConnections = [...prevConnections]; //pretty sure theses are all shallow copies.
 
-    if(connectionToSave.input.uuid == connectionToSave.output){
-        removeCurrentLine(connectionToSave);
-        return copyOfCurrentConnections;
-    }
-    
-    //look at our previous connections and return an non empty if our current node already exist in previous connections.  
-    const foundConnection = copyOfCurrentConnections.filter(connectionObject => 
-                                                connectionObject.input.uuid == connectionToSave.input.uuid &&  
-                                                connectionObject.input.index == connectionToSave.input.index); 
-    
-    if(foundConnection.length == 0 ){ //is this a new connection
-        let copyObject:ConnectionState = {...connectionToSave}; // create a deep copy of our current connection state
-        copyObject.didBeginInput = connectionToSave.didBeginInput;
-        copyObject.input =  Object.assign({},connectionToSave.input);
-        copyObject.lineObject = connectionToSave.lineObject;
-        copyObject.output = connectionToSave.output;
-
-        copyOfCurrentConnections.push(copyObject);//add the newly copied connection state to the array. 
-
-    }else{
-        //just update connections don't make a new one;
-        foundConnection[0].lineObject.removeLine();
-        foundConnection[0].lineObject = connectionToSave.lineObject;
-        foundConnection[0].output = connectionToSave.output;
-    }
-    
-    
-    return copyOfCurrentConnections;
-   
-}
 
 function drawConnection(beginPos,isInputConnection:boolean,handleOnDrawMouseUp:Function){
 
@@ -172,7 +137,9 @@ function drawInputConnection(begPos,handleOnDrawMouseUp:Function){
 function drawOutputConnection(endPos,handleOnDrawMouseUp:Function){
     return drawConnection(endPos,false,handleOnDrawMouseUp);
 }
-
+function isConnectionReferringToItself(connection:ConnectionState){
+    return(connection.input.uuid ==  connection.output);
+}
 function removeLineIfBothInputs(currentConnection:ConnectionState){
     if(currentConnection.didBeginInput){
         return removeCurrentLine(currentConnection);
@@ -260,12 +227,7 @@ function updateOutputLines(parentNode,currentNodeId:string,allCurrentConnections
     }
     
 }
-function resetConnectionState(currentConnection:ConnectionState){
-    currentConnection.input.index = -1;
-    currentConnection.input.uuid = null;
-    currentConnection.output= null;
-    currentConnection.lineObject = null;
-}
+
 function removeCurrentLine(currentConnection:ConnectionState){
     let copyofConnectionState = {...currentConnection};
     if(!!currentConnection.lineObject){

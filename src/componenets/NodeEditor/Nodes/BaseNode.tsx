@@ -4,6 +4,9 @@ import {createInputs, createOutput} from './builders'
 import {EditorState, initNodeState} from '../global';
 import * as uuidv4 from 'uuid/v4';
 import Node from './Node';
+import {createRef} from 'react';
+import * as d3 from 'd3';
+import Title from './Title';
 
 interface NodeProps{
     top: number;
@@ -11,18 +14,19 @@ interface NodeProps{
 }
 
 class BaseNode extends React.Component<NodeProps> {
-    dragTarget:any;
-    handle:any;
     uuid: string;
-    inpRefs: React.RefObject<HTMLDivElement>[];
-    outRef:  React.RefObject<HTMLDivElement>;
-    input: JSX.Element[];
-    output: JSX.Element;
-    line: any;
+    dragTarget: React.Ref<HTMLDivElement>;
+    inpRefs: React.Ref<HTMLDivElement>[];
+    outRef : React.Ref<HTMLDivElement>;
+    handle : React.Ref<HTMLDivElement>;
+    input  : JSX.Element[];
+    output : JSX.Element;
+    line   : SVGLineElement;
+
     constructor(props){
         super(props);
         this.uuid = uuidv4();
-
+        this.handle = createRef();
         let structure = {
             inputs: [
                 'Image 1',
@@ -30,9 +34,9 @@ class BaseNode extends React.Component<NodeProps> {
                 'Image 3'
             ],
             output: 'Blend'
-        }
+        };
         createInputs.bind(this)(structure);
-        createOutput.bind(this)(structure)
+        createOutput.bind(this)(structure);
     }
     componentDidMount(){
         d3Drag.bind(this)();
@@ -68,7 +72,8 @@ class BaseNode extends React.Component<NodeProps> {
     render(){
         return (
             <Node ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
-                <div ref={handle => this.handle = handle} className="title"><p>Blend</p></div>
+                <Title ref={this.handle} title="Blend"/>
+                
                 <div className="connections">
                     <div className="inputs">
                         {this.input}

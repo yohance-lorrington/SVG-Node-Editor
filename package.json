@@ -42,6 +42,7 @@
     "@types/react": "^16.8.7",
     "@types/react-dom": "^16.8.2",
     "d3": "^5.9.2",
+    "d3-zoom": "^1.7.3",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
     "react-router-dom": "^4.3.1",
