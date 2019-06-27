@@ -76,7 +76,7 @@ export function inputDraw(beginPos,index:number){
 
 export function outputDraw(endPos){
     currentConnection.output = this.uuid;   
-    if(!!currentConnection.lineObject){//are we drawing a line right now
+    if(!!currentConnection.lineObject){//are we ending a connection or starting the process of drawing one
         let newcurrentConnection  = removeLineIfBothOutputs(currentConnection);
         currentConnection.lineObject = newcurrentConnection.lineObject;
         if(!!currentConnection.lineObject){
