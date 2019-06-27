@@ -1,25 +1,29 @@
 import * as d3 from 'd3';
 
-import {UIScale,EditorState,currentConnection,ConnectionState,saveConnection,resetConnectionState} from './global';
+import {editorUI,EditorState,currentConnection,ConnectionState,saveConnection,resetConnectionState} from './global';
 const RADIUS_CONNECTOR = 5;
-export function d3Zoom(){
+export function d3Zoom(isEditor){
     const zoom = d3.zoom()
-    .filter(function(){
-        return d3.event.button === 1 || d3.event.buttons === 0;
-    })
-    .scaleExtent([1, 5])
-    .on('zoom', this.Editor ? zoomedE: zoomed);
+        .filter(function(){
+            return d3.event.button === 1 || d3.event.buttons === 0;
+        })
+        .scaleExtent([1, 5])
+        .on('zoom', isEditor ? zoomedE: zoomed);
 
     function zoomedE(){
         const {k, x, y} = d3.event.transform;
-        UIScale.scale = k;
-        UIScale.x = x;
-        UIScale.y = y;
-        contentWrap.attr('transform', `translate(${x},${y}) scale(${k})`);
+        editorUI.scale = k;
+        editorUI.x = x;
+        editorUI.y = y;
+        requestAnimationFrame(()=>{
+            contentWrap.attr('transform', `translate(${x},${y}) scale(${k})`);
+        })
     }
     function zoomed(){
         const {k, x, y} = d3.event.transform;
-        contentWrap.attr('transform', `translate(${x},${y}) scale(${k})`);
+        requestAnimationFrame(()=>{
+            contentWrap.attr('transform', `translate(${x},${y}) scale(${k})`);
+        })
     }
     const contentWrap = d3.select(this.ui);
     const svg = d3.select(this.svg);
@@ -32,21 +36,18 @@ export function d3Drag(){
         let state = EditorState.Nodes[this.uuid];
         let currentConnections = EditorState.Connections;
 
-        state.root.pos.x = (d3.event.sourceEvent.x-d3.event.subject.x-UIScale.x)/UIScale.scale;
-        state.root.pos.y = (d3.event.sourceEvent.y-d3.event.subject.y-UIScale.y)/UIScale.scale;
+        state.root.pos.x = (d3.event.sourceEvent.x-d3.event.subject.x-editorUI.x)/editorUI.scale;
+        state.root.pos.y = (d3.event.sourceEvent.y-d3.event.subject.y-editorUI.y)/editorUI.scale;
     
         updateInputLines(state,this.uuid,currentConnections);
         updateOutputLines(state,this.uuid,currentConnections);
 
-        div.style('left', `${(d3.event.sourceEvent.x-d3.event.subject.x-UIScale.x)/UIScale.scale}px`);
-        div.style('top', `${(d3.event.sourceEvent.y-d3.event.subject.y-UIScale.y)/UIScale.scale}px`);
+        div.style('left', `${(d3.event.sourceEvent.x-d3.event.subject.x-editorUI.x)/editorUI.scale}px`);
+        div.style('top', `${(d3.event.sourceEvent.y-d3.event.subject.y-editorUI.y)/editorUI.scale}px`);
         
     }
     const drag = d3.drag()
         .on("drag", dragged);
-    
-    
-    
     const div = d3.select(this.dragTarget);
     d3.select(this.handle.current).call(drag);
 }
@@ -105,8 +106,8 @@ function drawConnection(beginPos,isInputConnection:boolean,handleOnDrawMouseUp:F
     function onMouseMove(){
         let endPos = d3.mouse(this);
         let point = {
-            x: (endPos[0]-UIScale.x)/UIScale.scale,
-            y:(endPos[1]-UIScale.y)/UIScale.scale
+            x: (endPos[0]-editorUI.x)/editorUI.scale,
+            y:(endPos[1]-editorUI.y)/editorUI.scale
         }
 
         if(isInputConnection){//I want the end of the line to be associated with the output;
