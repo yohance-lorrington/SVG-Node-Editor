@@ -5,7 +5,6 @@ import {EditorState, initNodeState} from '../global';
 import * as uuidv4 from 'uuid/v4';
 import Node from './Node';
 import {createRef} from 'react';
-import * as d3 from 'd3';
 import Title from './Title';
 
 interface NodeProps{
@@ -41,32 +40,25 @@ class BaseNode extends React.Component<NodeProps> {
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
- 
-        
     }
-    handleMouse(index){
+    handleConnection(index){
         let parent = EditorState.Nodes[this.uuid];
         let referencePositon = parent.root.pos;
-        let inputOffset = parent.inputs[index].ofst;
-
-        let inputPosition = {
-            x: referencePositon.x - inputOffset.x,
-            y: referencePositon.y - inputOffset.y
-        };
-    
-        inputDraw.bind(this)(inputPosition,index);
-    }
-    handleEndPoint(){
-        let parent = EditorState.Nodes[this.uuid];
-        let referencePositon = parent.root.pos;
-        let outPutOffset = parent.output.ofst;
-        let outputPosition = {
-            x: referencePositon.x - outPutOffset.x,
-            y: referencePositon.y - outPutOffset.y
+        if(index===null){
+            let outputOffset = parent.output.ofst;
+            let outputPosition = {
+                x: referencePositon.x - outputOffset.x,
+                y: referencePositon.y - outputOffset.y
+            }
+            outputDraw.bind(this)(outputPosition);
+        }else{
+            let inputOffset = parent.inputs[index].ofst;
+            let inputPosition = {
+                x: referencePositon.x - inputOffset.x,
+                y: referencePositon.y - inputOffset.y
+            };
+            inputDraw.bind(this)(inputPosition,index);
         }
-      
-        outputDraw.bind(this)(outputPosition);
-    
     }
 
     render(){

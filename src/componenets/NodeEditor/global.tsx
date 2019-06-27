@@ -1,8 +1,34 @@
-export const UIScale = {
-    scale: 1,
-    x: 0,
-    y: 0
+class UITransform {
+    private _scale: number;
+    private _x: number;
+    private _y: number;
+    constructor(scale:number, x:number, y:number){
+        this._scale = scale;
+        this._x = x;
+        this._y = y;
+    }
+    get scale():number {
+        return this._scale;
+    }
+    set scale(scale: number){
+        this._scale = scale; 
+    }
+    get x():number {
+        return this._x;
+    }
+    set x(x: number){
+        this._x = x; 
+    }
+    get y():number {
+        return this._y;
+    }
+    set y(y: number){
+        this._y = y; 
+    }
 }
+export const editorUI =  new UITransform(1,0,0);
+
+
 export let currentConnection:ConnectionState ={
     didBeginInput:false,
     lineObject: null,
