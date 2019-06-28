@@ -151,6 +151,10 @@ function clearLines(currentConnection:ConnectionState,editorConnections:EditorSt
     //the idea is use the fact that a valid a connection contains both a non-empty input id and output id 
     let q = document.querySelectorAll(":hover");
     let wow = q[q.length-1];
+    console.log(currentConnection);
+
+    let currentState = Object.assign({},currentConnection);
+    console.log(currentState)
     if(!wow.classList.contains("connector")){
         currentConnection.lineObject.removeLine();
         editorConnections.removeLastConnection();
