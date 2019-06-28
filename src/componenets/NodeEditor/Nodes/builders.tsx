@@ -7,7 +7,7 @@ export function createInputs(structure) {
         this.inpRefs.push(createRef());
         return (
             <div key={i} className="input">
-                <div onMouseUp={this.handleConnection.bind(this, i)} onMouseDown={this.handleConnection.bind(this, i)} ref={this.inpRefs[i]} className="in connector"></div>
+                <div onMouseUp={this.handleConnection.bind(this, i)} onMouseDown={this.handleConnection.bind(this, i)} onClick={this.removeConnection.bind(this,i)} ref={this.inpRefs[i]} className="in connector"></div>
                 {name}
             </div>
         )

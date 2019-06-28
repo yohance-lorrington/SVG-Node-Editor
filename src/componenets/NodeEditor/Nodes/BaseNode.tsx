@@ -60,6 +60,9 @@ class BaseNode extends React.Component<NodeProps> {
             inputDraw.bind(this)(inputPosition,index);
         }
     }
+    removeConnection(index){
+        EditorState.removeInputConnection({uuid:this.uuid,index:index});
+    }
 
     render(){
         return (

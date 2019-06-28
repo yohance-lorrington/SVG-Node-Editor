@@ -1,3 +1,4 @@
+import {selectContainer} from '../NodeEditor/d3Interactions';
 class UITransform {
     private _scale: number;
     private _x: number;
@@ -26,32 +27,161 @@ class UITransform {
         this._y = y; 
     }
 }
+
+interface InputConnection{
+    uuid:string,
+    index:number
+}
+export class ConnectionState {
+    private _lineObject:any;
+    private _output:string;
+    private _input:InputConnection;
+    constructor(){
+        this._lineObject = null;
+        this._output = '';
+        this._input = {
+            uuid: '',
+            index: -1
+        };
+    }
+
+    get output():string {
+        return this._output;
+    }
+    get input():InputConnection{
+        return this._input;
+    }
+    get lineObject():any{
+        return this._lineObject;
+    }
+    set output(id:string){
+        this._output = id;
+    }
+    set input( inputObject:InputConnection){
+        this._input = inputObject;
+    }
+    set lineObject(linez:any){
+        this._lineObject = linez;
+    }
+
+}
+export class EditorStateClass{
+    public Nodes:any;
+    private _beganOnInput:boolean;
+    private _connecting:boolean;
+    private _connections:Array<ConnectionState>;
+    private _container:any;
+    constructor(){
+        this.Nodes = {};
+        this._container = null;
+        this._beganOnInput= false;
+        this._connecting = false;
+        this._connections= [];
+    }
+    getLastConnection():ConnectionState{
+        return this._connections[this.sizeOfConnections() -1];
+    }
+    removeLastConnection(){
+        this._connections.pop();//this returns the last element 
+    }
+    sizeOfConnections():number{
+        return this._connections.length;
+    }
+    addConnectionsState(connection:ConnectionState){
+        if(connection.input.uuid == connection.output)return;
+         
+        this._connections.push(connection);
+    
+       
+    }
+    removeDupInputConnections(connection:ConnectionState){
+        const inputIndexes = this._connections.map((connectionObject,idx) => connectionObject.input.uuid == connection.input.uuid &&  
+                                                                                connectionObject.input.index == connection.input.index ? idx:-1)
+                                                                                .filter(index => index != -1);
+        if(inputIndexes.length == 2){//there should only really be at most 2 elements 
+           
+            let firstIndex = inputIndexes[0];
+            let secondIndex = inputIndexes[1];
+
+            if(firstIndex<secondIndex){
+                this._connections[firstIndex].lineObject.removeLine();
+                this._connections.splice(firstIndex,1);
+            }else{
+                this._connections[secondIndex].lineObject.removeLine();
+                this._connections.splice(secondIndex,1);
+            }
+        }                                                               
+
+    }
+    updateConnectionLinesForNode(nodeId:string){
+        this.updateInputsForNodeWithId(nodeId);
+        this.updateOutputsForNodeWithId(nodeId);
+    }
+    removeInputConnection(inputToRemove:InputConnection){
+        const index = this._connections.findIndex(connectionObject => connectionObject.input.uuid == inputToRemove.uuid 
+                                                                        && connectionObject.input.index == inputToRemove.index );
+
+         if( index != -1){
+             this._connections[index].lineObject.removeLine();
+             this._connections.splice(index,1);
+         }                                                            
+    }
+    get beganOnInput():boolean{
+        return this._beganOnInput;
+    }
+    set beganOnInput(didItStartonInput:boolean){
+        this._beganOnInput = didItStartonInput;
+    }
+    get isConnecting():boolean{
+        return this._connecting;
+    }
+    set isConnecting(isconnection:boolean){
+        this._connecting = isconnection;
+    }
+    get htmlContainer():any{
+        return this._container;
+    }
+    set htmlContainer(container:any){
+        this._container = container;
+    }
+
+    private updateInputsForNodeWithId(id:string){
+        let outputsToUpdate = this._connections.filter(connectionObject => connectionObject.output == id);
+        const parentNode = this.Nodes[id];
+        for(let connectinObj of outputsToUpdate){
+            if(connectinObj.lineObject != null){
+                let point ={
+                    x: parentNode.root.pos.x -  parentNode.output.ofst.x,
+                    y: parentNode.root.pos.y - parentNode.output.ofst.y
+                }
+                connectinObj.lineObject.changeEndPoint(point);
+            }
+        }
+    }
+
+    private updateOutputsForNodeWithId(id:string){
+        const parentNode = this.Nodes[id];
+        let inputs = parentNode.inputs;
+          
+        let inputsToUpdate = this._connections.filter(connectionObject => connectionObject.input.uuid == id);
+    
+        for(let connectionObject of inputsToUpdate){
+            if(connectionObject.lineObject != null){ //probably a stupid check 
+                let point ={
+                    x:  parentNode.root.pos.x -  inputs[connectionObject.input.index].ofst.x ,
+                    y: parentNode.root.pos.y - inputs[connectionObject.input.index].ofst.y
+                }
+                connectionObject.lineObject.changeBeginPoint(point);
+            }
+    
+        }
+    }
+
+}
 export const editorUI =  new UITransform(1,0,0);
 
+export const EditorState = new EditorStateClass();
 
-export let currentConnection:ConnectionState ={
-    didBeginInput:false,
-    lineObject: null,
-    input:{
-        uuid:null,
-        index:-1
-    },
-    output:null
-};
-
-export interface ConnectionState{
-    didBeginInput:boolean,
-    lineObject:any,
-    input:{
-        uuid: string,
-        index: number,
-    },
-    output:string
-}
-export const EditorState = {
-    Nodes: {},
-    Connections: Array<ConnectionState>(),
-}
 export function initNodeState(){
     let inputRects = [];
     for(var inRef of this.inpRefs){
@@ -73,6 +203,7 @@ export function initNodeState(){
     let inputStates = inpOffsets.map((offset, i)=>{
         return{el: this.inpRefs[i].current, ofst: offset}
     });
+    if(!EditorState.htmlContainer) EditorState.htmlContainer = selectContainer();
     EditorState.Nodes[this.uuid] = {
         root: {
             el:this.dragTarget,
@@ -88,56 +219,4 @@ export function initNodeState(){
         }
 
     }
-}
-
-/**
- * The method will take connection state and will return a new array of connections with the new connection state added. 
- * If the connection state is self-refering (its input and output are refering to eachother) the new array will be equal to  prevConnections.
- * @param connectionToSave connection state used to either add or updated to the previous connections 
- * @param prevConnections  array of previous connections
- * @returns	Array<ConnectionState> will return a new array with the connection state added or a new array with a modified element
- * 
- * @example  [dumbyThicc]= saveConnection(dumbyThicc, [])
- * @example [thicc, updatedThiccer]   = saveConnection(updatedThiccer,[thicc,thiccer])
- * 
- */
-export function saveConnection(connectionToSave:ConnectionState,prevConnections:Array<ConnectionState>){
-    
-    let copyOfCurrentConnections = [...prevConnections]; //pretty sure theses are all shallow copies.
-
-    if(connectionToSave.input.uuid == connectionToSave.output){
-        
-        return copyOfCurrentConnections;
-    }
-    
-    //look at our previous connections and return an non empty if our current node already exist in previous connections.  
-    const foundConnection = copyOfCurrentConnections.filter(connectionObject => 
-                                                connectionObject.input.uuid == connectionToSave.input.uuid &&  
-                                                connectionObject.input.index == connectionToSave.input.index); 
-    
-    if(foundConnection.length == 0 ){ //is this a new connection
-        let copyObject:ConnectionState = {...connectionToSave}; // create a deep copy of our current connection state
-        copyObject.didBeginInput = connectionToSave.didBeginInput;
-        copyObject.input =  Object.assign({},connectionToSave.input);
-        copyObject.lineObject = connectionToSave.lineObject;
-        copyObject.output = connectionToSave.output;
-
-        copyOfCurrentConnections.push(copyObject);//add the newly copied connection state to the array. 
-
-    }else{
-        //just update connections don't make a new one;
-        foundConnection[0].lineObject.removeLine();
-        foundConnection[0].lineObject = connectionToSave.lineObject;
-        foundConnection[0].output = connectionToSave.output;
-    }
-    
-    
-    return copyOfCurrentConnections;
-   
-}
-export function resetConnectionState(currentConnection:ConnectionState){
-    currentConnection.input.index = -1;
-    currentConnection.input.uuid = null;
-    currentConnection.output= null;
-    currentConnection.lineObject = null;
 }
