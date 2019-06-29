@@ -42,8 +42,11 @@ const InternalTitle = styled.div`
 interface State{
     value: string;
 }
+interface NodeProps{
+    title: string;
+}
 
-class InputRange extends React.Component<{},State>{
+class RangeInput extends React.Component<NodeProps,State>{
     constructor(props){
         super(props);
         this.state = {
@@ -58,11 +61,11 @@ class InputRange extends React.Component<{},State>{
     render(){
         return(
             <InternalTitle>
-                <label htmlFor="">Saturation: {this.state.value}</label>
+                <label htmlFor="">{this.props.title}: {this.state.value}</label>
                 <Range type="range" min="0" max="1" step="0.001" onChange={this.setLabelValue.bind(this)} value={this.state.value}/>
             </InternalTitle>
             );
     }
 }
 
-export default InputRange;
+export default RangeInput;

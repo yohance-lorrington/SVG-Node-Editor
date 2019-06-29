@@ -1,5 +1,4 @@
-
-import ASTNode from '../src/componenets/NodeEditor/Node';
+import ASTNode from '../src/componenets/NodeEditor/Nodes/NodeParts/ASTNode';
 
 describe('default ASTNode', () => {
     let node = new ASTNode([], function () {

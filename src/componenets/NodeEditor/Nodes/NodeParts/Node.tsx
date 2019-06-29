@@ -21,9 +21,11 @@ const Node = styled.div`
     }
     .outputs{
         margin-left: auto;
+        width: ${props=>props.singular? '100%' : 'auto'}
     }
     .inputs{
         margin-right:auto;
+        width: ${props=>props.singular? '100%' : 'auto'}
     }
     .output{
         display: flex;

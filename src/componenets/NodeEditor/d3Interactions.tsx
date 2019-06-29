@@ -7,7 +7,7 @@ export function d3Zoom(isEditor){
         .filter(function(){
             return d3.event.button === 1 || d3.event.buttons === 0;
         })
-        .scaleExtent([1, 5])
+        .scaleExtent([0.1, 5])
         .on('zoom', isEditor ? zoomedE: zoomed);
 
     function zoomedE(){
@@ -30,23 +30,19 @@ export function d3Zoom(isEditor){
     svg.call(zoom);
     svg.on("dblclick.zoom", null);
 }
+
 export function selectContainer(){
     return d3.select('#editor');
 }
+
 export function d3Drag(){
     let dragged = ()=> {
         let state = EditorState.Nodes[this.uuid];
-        
-
         state.root.pos.x = (d3.event.sourceEvent.x-d3.event.subject.x-editorUI.x)/editorUI.scale;
         state.root.pos.y = (d3.event.sourceEvent.y-d3.event.subject.y-editorUI.y)/editorUI.scale;
-    
         EditorState.updateConnectionLinesForNode(this.uuid);
-
-
         div.style('left', `${state.root.pos.x}px`);
         div.style('top', `${state.root.pos.y}px`);
-        
     }
     const drag = d3.drag()
         .on("drag", dragged);
@@ -54,25 +50,57 @@ export function d3Drag(){
     d3.select(this.handle.current).call(drag);
 }
 
+class d3Line {
+    private line;
+    constructor(container, beginPos, endPos){
+        this.line = container.append("line")
+            .attr('x1', beginPos.x).attr('y1', beginPos.y).attr('x2', endPos.x).attr('y2', endPos.y)
+            .attr('stroke', 'white')
+            .attr('stroke-width', '2')
+            .attr('stroke-linecap',"round");
+    }
+    changeBeginPoint(beginPoint){
+        this.line.attr('x1',beginPoint.x).attr('y1',beginPoint.y);
+    }
+    changeEndPoint(endPoint){
+        this.line.attr('x2',endPoint.x).attr('y2',endPoint.y);
+    }
+    getBeginPoint(){
+        return {
+            x: parseInt(this.line.attr('x1')),
+            y: parseInt(this.line.attr('y1'))
+        }
+    };
+    removeLine(){
+        this.line.remove();
+    }
+    getEndPoint(){
+        return {
+            x: parseInt(this.line.attr('x2')),
+            y: parseInt(this.line.attr('y2'))
+        }
+    }
+}
+
 export function inputDraw(beginPos,index:number){
     if(!EditorState.isConnecting ){
         let newConnection = new ConnectionState();
-        newConnection.input ={ uuid:this.uuid,index:index};
+        newConnection.input = {uuid:this.uuid,index:index};
         newConnection.lineObject = drawInputConnection(beginPos,EditorState.htmlContainer,()=>{clearLines(newConnection,EditorState);});
-        EditorState.addConnectionsState(newConnection);
+        EditorState.push(newConnection);
         EditorState.beganOnInput = true;
         EditorState.isConnecting = true;
     }
     else{
-        let workingConnection = EditorState.getLastConnection();
-        workingConnection.input = {uuid:this.uuid,index:index};
-        workingConnection.lineObject = endInputConnection(beginPos, workingConnection.lineObject);
-        if(EditorState.beganOnInput ||
-            (workingConnection.input.uuid == workingConnection.output)){
-            workingConnection.lineObject.removeLine();
-            EditorState.removeLastConnection();
+        if(EditorState.beganOnInput){
+            EditorState.getLastConnection().lineObject.removeLine();
         }
-        EditorState.removeDupInputConnections(workingConnection);
+        else if(!EditorState.peekLastConnection().isSelfReferring()){
+            let workingConnection = EditorState.getLastConnection();
+            workingConnection.lineObject = endInputConnection(beginPos,workingConnection.lineObject);
+            workingConnection.input={uuid:this.uuid,index:index};
+            EditorState.addConnection(workingConnection);
+        }
         EditorState.isConnecting = false;
         removeMouseOnListener(EditorState.htmlContainer);
     } 
@@ -80,24 +108,23 @@ export function inputDraw(beginPos,index:number){
 
 export function outputDraw(endPos){
 
-    
     if(!EditorState.isConnecting){
         let newConnection = new ConnectionState();
         newConnection.output = this.uuid;
         newConnection.lineObject = drawOutputConnection(endPos,EditorState.htmlContainer,()=>{clearLines(newConnection,EditorState);});
-        EditorState.addConnectionsState(newConnection);
+        EditorState.push(newConnection);
         EditorState.beganOnInput = false;
         EditorState.isConnecting = true;
     }else{
-        let workingConnection = EditorState.getLastConnection();
-        workingConnection.output = this.uuid;
-        workingConnection.lineObject = endOutputConnection(endPos,workingConnection.lineObject);
-        if(!EditorState.beganOnInput ||
-            (workingConnection.input.uuid == workingConnection.output)){
-            workingConnection.lineObject.removeLine();
-            EditorState.removeLastConnection();
+        if(!EditorState.beganOnInput){
+            EditorState.getLastConnection().lineObject.removeLine();
         }
-        EditorState.removeDupInputConnections(workingConnection);
+        else if(!EditorState.peekLastConnection().isSelfReferring()){
+            let workingConnection = EditorState.getLastConnection();
+            workingConnection.lineObject = endOutputConnection(endPos,workingConnection.lineObject);
+            workingConnection.output=this.uuid;
+            EditorState.addConnection(workingConnection);
+        }
         EditorState.isConnecting = false;
         removeMouseOnListener(EditorState.htmlContainer);
     }
@@ -151,13 +178,9 @@ function clearLines(currentConnection:ConnectionState,editorConnections:EditorSt
     //the idea is use the fact that a valid a connection contains both a non-empty input id and output id 
     let q = document.querySelectorAll(":hover");
     let wow = q[q.length-1];
-    console.log(currentConnection);
-
-    let currentState = Object.assign({},currentConnection);
-    console.log(currentState)
     if(!wow.classList.contains("connector")){
         currentConnection.lineObject.removeLine();
-        editorConnections.removeLastConnection();
+        editorConnections.discardLastConnection();
         editorConnections.isConnecting = false;
     }
     removeMouseOnListener(d3.select("#editor"));
@@ -172,81 +195,3 @@ function removeMouseOnListener(htmlContainer){
 function disableSelect(event){
     event.preventDefault();
 }
-
-class d3Line {
-    private line;
-    constructor(container, beginPos, endPos){
-        this.line = container.append("line")
-            .attr('x1', beginPos.x).attr('y1', beginPos.y).attr('x2', endPos.x).attr('y2', endPos.y)
-            .attr('stroke', 'white')
-            .attr('stroke-width', '2')
-            .attr('stroke-linecap',"round");
-    }
-    changeBeginPoint(beginPoint){
-        this.line.attr('x1',beginPoint.x).attr('y1',beginPoint.y);
-    }
-    changeEndPoint(endPoint){
-        this.line.attr('x2',endPoint.x).attr('y2',endPoint.y);
-    }
-    getBeginPoint(){
-        return {
-            x: parseInt(this.line.attr('x1')),
-            y: parseInt(this.line.attr('y1'))
-        }
-    };
-    removeLine(){
-        this.line.remove();
-    }
-    getEndPoint(){
-        return {
-            x: parseInt(this.line.attr('x2')),
-            y: parseInt(this.line.attr('y2'))
-        }
-    }
-}
-/*this.nice.addEventListener('mousedown',(e)=>{
-    const yaes = this.nice.getBoundingClientRect();
-    const startPoint = {
-        x: ((yaes.left+yaes.right)/2-UIScale.x)/UIScale.scale,
-        y: ((yaes.top+yaes.bottom)/2-UIScale.y)/UIScale.scale
-    }
-    const endPoint = {
-        x: e.x,
-        y: e.y
-    }
-    function disableSelect(event){
-        event.preventDefault();
-    }
-    document.addEventListener('selectstart',disableSelect);
-    let editor = d3.select("#editor");
-    let connections = d3.select("#connections");
-    let line = connections.append("line")
-        .attr('x1', startPoint.x)
-        .attr('y1', startPoint.y)
-        .attr('x2', (endPoint.x-UIScale.x)/UIScale.scale)
-        .attr('y2', (endPoint.y-UIScale.y)/UIScale.scale)
-        .attr('stroke', 'white')
-        .attr('stroke-width', '1')
-        .attr('stroke-linecap',"round");
-    
-    editor.on('mousemove', mousemove);
-    function mousemove(){
-        var m = d3.mouse(this);
-        line.attr('x2', (m[0]-UIScale.x)/UIScale.scale)
-            .attr('y2', (m[1]-UIScale.y)/UIScale.scale);
-    }
-    editor.on('mouseup', ()=>{
-        let q = document.querySelectorAll(":hover");
-        let wow = q[q.length-1];
-        let rect = wow.getBoundingClientRect();
-        if(wow.classList[0] == "input"){
-            line.attr('x2', ((rect.left+rect.right)/2-UIScale.x)/UIScale.scale)
-                .attr('y2', ((rect.top+rect.bottom)/2-UIScale.y)/UIScale.scale);
-        }else{
-            line.remove();
-        }
-        document.removeEventListener('selectstart',disableSelect);
-        editor.on('mousemove', null);
-        editor.on('mouseup',null)
-    });
-});*/
