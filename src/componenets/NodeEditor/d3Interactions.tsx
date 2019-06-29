@@ -99,6 +99,7 @@ export function inputDraw(beginPos,index:number){
             let workingConnection = EditorState.getLastConnection();
             workingConnection.lineObject = endInputConnection(beginPos,workingConnection.lineObject);
             workingConnection.input={uuid:this.uuid,index:index};
+            
             EditorState.addConnection(workingConnection);
         }
         EditorState.isConnecting = false;

@@ -108,7 +108,6 @@ export class EditorStateClass{
         const index = this._connections.findIndex(connectionObject=> connectionObject.input.uuid == inputConnection.uuid && 
                                                                             connectionObject.input.index == inputConnection.index);
         
-
         return {
             found: index != -1  ? true:false,
             index: index
@@ -116,8 +115,7 @@ export class EditorStateClass{
     }
     removeInputConnection(inputConnection:InputConnection){
         let foundObject = this.findInputConnection(inputConnection);
-        if(foundObject.found){
-            
+        if(foundObject.found){ 
              this._connections[foundObject.index].lineObject.removeLine();
              this._connections.splice(foundObject.index,1);
         } 
@@ -125,8 +123,7 @@ export class EditorStateClass{
     }
     removeOutputConnections(outputUUID:string){
         const indices = this._connections.map((connectionbject,idx)=>connectionbject.output == outputUUID ? idx:-1).filter(index=> index != -1);
-        for (const index of indices.reverse()) {
-           
+        for (const index of indices.reverse()) {   
             this._connections[index].lineObject.removeLine();
             this._connections.splice(index,1);
         }
