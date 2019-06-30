@@ -108,7 +108,6 @@ export function inputDraw(beginPos,index:number){
 }
 
 export function outputDraw(endPos){
-
     if(!EditorState.isConnecting){
         let newConnection = new ConnectionState();
         newConnection.output = this.uuid;
