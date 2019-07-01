@@ -63,6 +63,9 @@ export class ConnectionState {
     set lineObject(linez:any){
         this._lineObject = linez;
     }
+    isSelfReferring():boolean{
+        return this._input.uuid == this._output;
+    }
 
 }
 export class EditorStateClass{
@@ -79,50 +82,54 @@ export class EditorStateClass{
         this._connections= [];
     }
     getLastConnection():ConnectionState{
-        return this._connections[this.sizeOfConnections() -1];
+        return this._connections.pop();
     }
-    removeLastConnection(){
+    discardLastConnection(){
         this._connections.pop();//this returns the last element 
     }
     sizeOfConnections():number{
         return this._connections.length;
     }
-    addConnectionsState(connection:ConnectionState){
-        if(connection.input.uuid == connection.output)return;
+    push(connection:ConnectionState){
         this._connections.push(connection);
     }
-    removeDupInputConnections(connection:ConnectionState){
-        const inputIndexes = this._connections.map((connectionObject,idx) => connectionObject.input.uuid == connection.input.uuid &&  
-                                                                                connectionObject.input.index == connection.input.index ? idx:-1)
-                                                                                .filter(index => index != -1);
-        if(inputIndexes.length == 2){//there should only really be at most 2 elements 
-           
-            let firstIndex = inputIndexes[0];
-            let secondIndex = inputIndexes[1];
-
-            if(firstIndex<secondIndex){
-                this._connections[firstIndex].lineObject.removeLine();
-                this._connections.splice(firstIndex,1);
-            }else{
-                this._connections[secondIndex].lineObject.removeLine();
-                this._connections.splice(secondIndex,1);
-            }
-        }                                                               
-
+    peekLastConnection():ConnectionState{
+        return this._connections[this.sizeOfConnections()-1];
+    }
+    addConnection(connection:ConnectionState){
+        this.removeInputConnection(connection.input);
+        this.push(connection);
     }
     updateConnectionLinesForNode(nodeId:string){
         this.updateInputsForNodeWithId(nodeId);
         this.updateOutputsForNodeWithId(nodeId);
     }
-    removeInputConnection(inputToRemove:InputConnection){
-        const index = this._connections.findIndex(connectionObject => connectionObject.input.uuid == inputToRemove.uuid 
-                                                                        && connectionObject.input.index == inputToRemove.index );
-
-         if( index != -1){
-             this._connections[index].lineObject.removeLine();
-             this._connections.splice(index,1);
-         }                                                            
+    findInputConnection(inputConnection:InputConnection){
+        const index = this._connections.findIndex(connectionObject=> connectionObject.input.uuid == inputConnection.uuid && 
+                                                                            connectionObject.input.index == inputConnection.index);
+        
+        return {
+            found: index != -1  ? true:false,
+            index: index
+        };  
     }
+    removeInputConnection(inputConnection:InputConnection){
+        let foundObject = this.findInputConnection(inputConnection);
+        if(foundObject.found){ 
+             this._connections[foundObject.index].lineObject.removeLine();
+             this._connections.splice(foundObject.index,1);
+        } 
+                                                      
+    }
+    removeOutputConnections(outputUUID:string){
+        const indices = this._connections.map((connectionbject,idx)=>connectionbject.output == outputUUID ? idx:-1).filter(index=> index != -1);
+        for (const index of indices.reverse()) {   
+            this._connections[index].lineObject.removeLine();
+            this._connections.splice(index,1);
+        }
+    }
+
+
     get beganOnInput():boolean{
         return this._beganOnInput;
     }

@@ -87,45 +87,45 @@ export function inputDraw(beginPos,index:number){
         let newConnection = new ConnectionState();
         newConnection.input = {uuid:this.uuid,index:index};
         newConnection.lineObject = drawInputConnection(beginPos,EditorState.htmlContainer,()=>{clearLines(newConnection,EditorState);});
-        EditorState.addConnectionsState(newConnection);
+        EditorState.push(newConnection);
         EditorState.beganOnInput = true;
         EditorState.isConnecting = true;
     }
     else{
-        let workingConnection = EditorState.getLastConnection();
-        workingConnection.input = {uuid:this.uuid,index:index};
-        workingConnection.lineObject = endInputConnection(beginPos, workingConnection.lineObject);
-        if(EditorState.beganOnInput ||
-            (workingConnection.input.uuid == workingConnection.output)){
-            workingConnection.lineObject.removeLine();
-            EditorState.removeLastConnection();
+        if(EditorState.beganOnInput){
+            EditorState.getLastConnection().lineObject.removeLine();
         }
-        EditorState.removeDupInputConnections(workingConnection);
-        console.log(workingConnection);
+        else if(!EditorState.peekLastConnection().isSelfReferring()){
+            let workingConnection = EditorState.getLastConnection();
+            workingConnection.lineObject = endInputConnection(beginPos,workingConnection.lineObject);
+            workingConnection.input={uuid:this.uuid,index:index};
+            
+            EditorState.addConnection(workingConnection);
+        }
         EditorState.isConnecting = false;
         removeMouseOnListener(EditorState.htmlContainer);
     } 
 }
 
 export function outputDraw(endPos){
+
     if(!EditorState.isConnecting){
         let newConnection = new ConnectionState();
         newConnection.output = this.uuid;
         newConnection.lineObject = drawOutputConnection(endPos,EditorState.htmlContainer,()=>{clearLines(newConnection,EditorState);});
-        EditorState.addConnectionsState(newConnection);
+        EditorState.push(newConnection);
         EditorState.beganOnInput = false;
         EditorState.isConnecting = true;
     }else{
-        let workingConnection = EditorState.getLastConnection();
-        workingConnection.output = this.uuid;
-        workingConnection.lineObject = endOutputConnection(endPos,workingConnection.lineObject);
-        if(!EditorState.beganOnInput ||
-            (workingConnection.input.uuid == workingConnection.output)){
-            workingConnection.lineObject.removeLine();
-            EditorState.removeLastConnection();
+        if(!EditorState.beganOnInput){
+            EditorState.getLastConnection().lineObject.removeLine();
         }
-        EditorState.removeDupInputConnections(workingConnection);
-        console.log(workingConnection);
+        else if(!EditorState.peekLastConnection().isSelfReferring()){
+            let workingConnection = EditorState.getLastConnection();
+            workingConnection.lineObject = endOutputConnection(endPos,workingConnection.lineObject);
+            workingConnection.output=this.uuid;
+            EditorState.addConnection(workingConnection);
+        }
         EditorState.isConnecting = false;
         removeMouseOnListener(EditorState.htmlContainer);
     }
@@ -181,7 +181,7 @@ function clearLines(currentConnection:ConnectionState,editorConnections:EditorSt
     let wow = q[q.length-1];
     if(!wow.classList.contains("connector")){
         currentConnection.lineObject.removeLine();
-        editorConnections.removeLastConnection();
+        editorConnections.discardLastConnection();
         editorConnections.isConnecting = false;
     }
     removeMouseOnListener(d3.select("#editor"));

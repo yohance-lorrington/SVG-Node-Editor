@@ -12,7 +12,7 @@ export function createInputs(structure) {
         this.inpRefs.push(createRef());
         return (
             <div key={i} className="input">
-                <div onMouseUp={handleConnection.bind(this, i)} onMouseDown={handleConnection.bind(this, i)} onClick={removeConnection.bind(this,i)} ref={this.inpRefs[i]} className="in connector"></div>
+                <div onMouseUp={handleConnection.bind(this, i)} onMouseDown={handleConnection.bind(this, i)} onClick={removeInputConnection.bind(this,i)} ref={this.inpRefs[i]} className="in connector"></div>
                 {name}
             </div>
         )
@@ -32,7 +32,7 @@ export function createOutputWithRange(structure){
     this.output = (
         <div className="output">            
             <RangeInput title={structure.output}/>
-            <div onMouseUp={handleConnection.bind(this,null)} onMouseDown={handleConnection.bind(this,null)} ref={this.outRef} className="out connector"></div>
+            <div onMouseUp={handleConnection.bind(this,null)} onMouseDown={handleConnection.bind(this,null)} onClick={removeOutputConnections.bind(this)} ref={this.outRef} className="out connector"></div>
         </div>
     )
 }
@@ -56,6 +56,9 @@ function handleConnection(index){
     }
 }
 
-function removeConnection(index){
+function removeInputConnection(index){
     EditorState.removeInputConnection({uuid:this.uuid,index:index});
+}
+function removeOutputConnections(){
+    EditorState.removeOutputConnections(this.uuid);
 }
