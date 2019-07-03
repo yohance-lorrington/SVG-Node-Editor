@@ -72,60 +72,61 @@ export class EditorStateClass{
     public Nodes:any;
     private _beganOnInput:boolean;
     private _connecting:boolean;
-    private _connections:Array<ConnectionState>;
+    private _tempConnectionAddress:string = this.hash({uuid:'',index:-1});
+    private _connections:Map<string,ConnectionState>;
     private _container:any;
     constructor(){
         this.Nodes = {};
         this._container = null;
         this._beganOnInput= false;
         this._connecting = false;
-        this._connections= [];
+        this._connections= new Map();
+    }
+    private hash(inputConnection:InputConnection):string{
+        return `${inputConnection.uuid}--${inputConnection.index}`
     }
     getLastConnection():ConnectionState{
-        return this._connections.pop();
+        let connection = this._connections.get(this._tempConnectionAddress);
+        this._connections.delete(this._tempConnectionAddress);
+        return connection;
     }
     discardLastConnection(){
-        this._connections.pop();//this returns the last element 
+        this.getLastConnection();
     }
     sizeOfConnections():number{
-        return this._connections.length;
+        return this._connections.size;
     }
     push(connection:ConnectionState){
-        this._connections.push(connection);
+        this._connections.set(this._tempConnectionAddress,connection);
     }
     peekLastConnection():ConnectionState{
-        return this._connections[this.sizeOfConnections()-1];
+
+        return this._connections.get(this._tempConnectionAddress);
     }
     addConnection(connection:ConnectionState){
         this.removeInputConnection(connection.input);
-        this.push(connection);
+        this._connections.set(this.hash(connection.input),connection);
     }
     updateConnectionLinesForNode(nodeId:string){
         this.updateInputsForNodeWithId(nodeId);
         this.updateOutputsForNodeWithId(nodeId);
     }
     findInputConnection(inputConnection:InputConnection){
-        const index = this._connections.findIndex(connectionObject=> connectionObject.input.uuid == inputConnection.uuid && 
-                                                                            connectionObject.input.index == inputConnection.index);
-        
-        return {
-            found: index != -1  ? true:false,
-            index: index
-        };  
+        return this._connections.get(this.hash(inputConnection));
     }
     removeInputConnection(inputConnection:InputConnection){
-        let foundObject = this.findInputConnection(inputConnection);
-        if(foundObject.found){ 
-             this._connections[foundObject.index].lineObject.removeLine();
-             this._connections.splice(foundObject.index,1);
+        let connection = this.findInputConnection(inputConnection);
+        if(!!connection){ 
+             connection.lineObject.removeLine();
+             this._connections.delete(this.hash(connection.input));
         } 
-                                                      
     }
     removeOutputConnections(outputUUID:string){
-        const indices = this._connections.map((connectionbject,idx)=>connectionbject.output == outputUUID ? idx:-1).filter(index=> index != -1);
-        for (const index of indices.reverse()) {   
-            this._connections[index].lineObject.removeLine();
-            this._connections.splice(index,1);
+        const arrayOfInputConnections = Array.from(this._connections).map(([,connectinObj])=>connectinObj.output == outputUUID 
+                                                                                ? connectinObj.input:null)
+                                                                                .filter(hashConnectionString=> hashConnectionString != null);
+        for (const inputconnection of arrayOfInputConnections) {   
+            this.removeInputConnection(inputconnection);
         }
     }
 
@@ -149,28 +150,32 @@ export class EditorStateClass{
         this._container = container;
     }
 
-    private updateInputsForNodeWithId(id:string){
-        let outputsToUpdate = this._connections.filter(connectionObject => connectionObject.output == id);
+    private updateOutputsForNodeWithId(id:string){
+        let outputsToUpdate = Array.from(this._connections).map(([inputConnectionString,connectinObj])=>connectinObj.output == id  ? inputConnectionString:null)
+                                                                .filter(hashConnectionString=> hashConnectionString != null);
         const parentNode = this.Nodes[id];
-        for(let connectinObj of outputsToUpdate){
-            if(connectinObj.lineObject != null){
+    
+        for(let inputconnectionHashed of outputsToUpdate){
+            let connection =this._connections.get(inputconnectionHashed);
+            if( connection!= null){
                 let point ={
                     x: parentNode.root.pos.x -  parentNode.output.ofst.x,
                     y: parentNode.root.pos.y - parentNode.output.ofst.y
                 }
-                connectinObj.lineObject.changeEndPoint(point);
+                connection.lineObject.changeEndPoint(point);
             }
         }
     }
 
-    private updateOutputsForNodeWithId(id:string){
+    private updateInputsForNodeWithId(id:string){
         const parentNode = this.Nodes[id];
         let inputs = parentNode.inputs;
-          
-        let inputsToUpdate = this._connections.filter(connectionObject => connectionObject.input.uuid == id);
-    
-        for(let connectionObject of inputsToUpdate){
-            if(connectionObject.lineObject != null){ //probably a stupid check 
+         
+        let inputsToUpdate = Array.from(this._connections).map(([inputConnectionString,connectinObj])=>connectinObj.input.uuid == id  ? inputConnectionString:null)
+                                                                .filter(hashConnectionString=> hashConnectionString != null);
+        for(let inputconnectionHashed of inputsToUpdate){
+            let connectionObject = this._connections.get(inputconnectionHashed);
+            if(connectionObject != null){ //probably a stupid check 
                 let point ={
                     x:  parentNode.root.pos.x -  inputs[connectionObject.input.index].ofst.x ,
                     y: parentNode.root.pos.y - inputs[connectionObject.input.index].ofst.y
