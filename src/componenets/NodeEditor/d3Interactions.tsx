@@ -92,15 +92,16 @@ export function inputDraw(beginPos,index:number){
         EditorState.isConnecting = true;
     }
     else{
-        if(EditorState.beganOnInput){
+        
+        let tempConnection = EditorState.peekLastConnection();
+        tempConnection.input = {uuid:this.uuid, index: index};
+        if(EditorState.beganOnInput || tempConnection.isSelfReferring()){
             EditorState.getLastConnection().lineObject.removeLine();
         }
-        else if(!EditorState.peekLastConnection().isSelfReferring()){
-            let workingConnection = EditorState.getLastConnection();
-            workingConnection.lineObject = endInputConnection(beginPos,workingConnection.lineObject);
-            workingConnection.input={uuid:this.uuid,index:index};
-            
-            EditorState.addConnection(workingConnection);
+        else{
+            tempConnection = EditorState.getLastConnection();
+            tempConnection.lineObject = endInputConnection(beginPos,tempConnection.lineObject);            
+            EditorState.addConnection(tempConnection);
         }
         EditorState.isConnecting = false;
         removeMouseOnListener(EditorState.htmlContainer);
@@ -116,14 +117,15 @@ export function outputDraw(endPos){
         EditorState.beganOnInput = false;
         EditorState.isConnecting = true;
     }else{
-        if(!EditorState.beganOnInput){
+        let tempConnection = EditorState.peekLastConnection();
+        tempConnection.output = this.uuid;
+        if(!EditorState.beganOnInput || tempConnection.isSelfReferring()){
             EditorState.getLastConnection().lineObject.removeLine();
         }
-        else if(!EditorState.peekLastConnection().isSelfReferring()){
-            let workingConnection = EditorState.getLastConnection();
-            workingConnection.lineObject = endOutputConnection(endPos,workingConnection.lineObject);
-            workingConnection.output=this.uuid;
-            EditorState.addConnection(workingConnection);
+        else{
+            tempConnection = EditorState.getLastConnection();
+            tempConnection.lineObject = endOutputConnection(endPos,tempConnection.lineObject);
+            EditorState.addConnection(tempConnection);
         }
         EditorState.isConnecting = false;
         removeMouseOnListener(EditorState.htmlContainer);

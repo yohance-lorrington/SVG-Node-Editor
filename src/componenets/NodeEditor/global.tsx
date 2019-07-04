@@ -73,7 +73,7 @@ export class EditorStateClass{
     private _beganOnInput:boolean;
     private _connecting:boolean;
     private _tempConnectionAddress:string = this.hash({uuid:'',index:-1});
-    private _connections:Map<string,ConnectionState>;
+    public _connections:Map<string,ConnectionState>;
     private _container:any;
     constructor(){
         this.Nodes = {};
@@ -100,7 +100,6 @@ export class EditorStateClass{
         this._connections.set(this._tempConnectionAddress,connection);
     }
     peekLastConnection():ConnectionState{
-
         return this._connections.get(this._tempConnectionAddress);
     }
     addConnection(connection:ConnectionState){
