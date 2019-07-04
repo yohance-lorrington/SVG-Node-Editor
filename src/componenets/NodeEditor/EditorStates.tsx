@@ -1,4 +1,10 @@
-import {selectContainer} from '../NodeEditor/d3Interactions';
+import {selectContainer} from './UIinteractions';
+/**
+ * This file creates interfaces for all the differen types of information the editor has to keep track of. 
+ * A manual state management is used instead of React's state system as all manipulations are happening directly
+ * on the DOM via D3. 
+ * This also let's us move away from react as our front-end framework if we want.
+ */
 class UITransform {
     private _scale: number;
     private _x: number;
@@ -67,6 +73,55 @@ export class ConnectionState {
         return this._input.uuid == this._output;
     }
 
+}
+// Uses the ref's and ASTNode to create the State object for each node. 
+export function initNodeState(){
+    let inputStates;
+    if(this.inpRefs){
+        let inputRects = [];
+        for(var inRef of this.inpRefs){
+            inputRects.push(inRef.current.getBoundingClientRect()) // Calculates boudning rectangle only once during initialization. 
+        };
+        let inpOffsets = [];
+        for(var rect of inputRects){
+            let offset = {
+                x: (this.props.left - (rect.left+rect.right)/2),
+                y: (this.props.top - (rect.top+rect.bottom)/2) - window.scrollY
+            }; // stores the position of the inputs as an offset from the nodes base location.
+            inpOffsets.push(offset);
+        }
+        
+        inputStates = inpOffsets.map((offset, i)=>{
+            return{el: this.inpRefs[i].current, ofst: offset}
+        });
+    }
+    let outputState;
+    if(this.outRef){
+        let outRect = this.outRef.current.getBoundingClientRect(); // Calculates boudning rectangle only once during initialization. 
+        let outOffset = {
+            x: (this.props.left - (outRect.left+outRect.right)/2),
+            y: (this.props.top - (outRect.top+outRect.bottom)/2) - window.scrollY
+        };
+        outputState = {
+            el: this.outRef.current,
+            ofst: outOffset
+        }; // stores the position of the output as an offset from the nodes base location.
+    }
+    if(!EditorState.htmlContainer) 
+        EditorState.htmlContainer = selectContainer();
+    EditorState.Nodes[this.uuid] = {
+        root: {
+            el:this.dragTarget,
+            pos: {
+                x: this.props.left,
+                y: this.props.top
+            }
+        },
+        inputs: inputStates,
+        output: outputState,
+        nodeFunction: this.ASTNode
+
+    }
 }
 export class EditorStateClass{
     public Nodes:any;
@@ -189,52 +244,3 @@ export class EditorStateClass{
 export const editorUI =  new UITransform(1,0,0);
 
 export const EditorState = new EditorStateClass();
-
-export function initNodeState(){
-    let inputStates;
-    if(this.inpRefs){
-        let inputRects = [];
-        for(var inRef of this.inpRefs){
-            inputRects.push(inRef.current.getBoundingClientRect())
-        };
-        let inpOffsets = [];
-        for(var rect of inputRects){
-            let offset = {
-                x: (this.props.left - (rect.left+rect.right)/2),
-                y: (this.props.top - (rect.top+rect.bottom)/2) - window.scrollY
-            };
-            inpOffsets.push(offset);
-        }
-        
-        inputStates = inpOffsets.map((offset, i)=>{
-            return{el: this.inpRefs[i].current, ofst: offset}
-        });
-    }
-    let outputState;
-    if(this.outRef){
-        let outRect = this.outRef.current.getBoundingClientRect();
-        let outOffset = {
-            x: (this.props.left - (outRect.left+outRect.right)/2),
-            y: (this.props.top - (outRect.top+outRect.bottom)/2) - window.scrollY
-        };
-        outputState = {
-            el: this.outRef.current,
-            ofst: outOffset
-        };
-    }
-    if(!EditorState.htmlContainer) 
-        EditorState.htmlContainer = selectContainer();
-    EditorState.Nodes[this.uuid] = {
-        root: {
-            el:this.dragTarget,
-            pos: {
-                x: this.props.left,
-                y: this.props.top
-            }
-        },
-        inputs: inputStates,
-        output: outputState,
-        nodeFunction: this.ASTNode
-
-    }
-}

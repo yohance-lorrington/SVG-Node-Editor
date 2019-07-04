@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-
+//Wrapping div for the Editor UI with repeating grid background.
 const EditorBG = styled.div`
     width: 100vw;
     height: 99vh;

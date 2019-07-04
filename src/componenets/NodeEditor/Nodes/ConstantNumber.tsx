@@ -2,9 +2,9 @@ import * as React from "react";
 import {createRef} from 'react';
 import * as uuidv4 from 'uuid/v4';
 
-import {d3Drag} from '../d3Interactions';
+import {d3Drag} from '../UIinteractions';
 import {createOutputWithRange} from './NodeParts/NodeHelpers';
-import {initNodeState} from '../global';
+import {initNodeState} from '../EditorStates';
 
 
 import Node from './NodeParts/Node';

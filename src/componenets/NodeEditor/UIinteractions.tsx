@@ -1,7 +1,12 @@
 import * as d3 from 'd3';
 
-import {editorUI,EditorState,ConnectionState,EditorStateClass} from './global';
+import {editorUI,EditorState,ConnectionState,EditorStateClass} from './EditorStates';
+/**
+ * This file contains d3 functionality tailored towards our specific use case. 
+ * It exposes simple functions for enabling d3's user interaction.
+ */
 
+// Enables zooming and panning using the middle mouse button and scroll wheel when called upon a dom element.
 export function d3Zoom(isEditor){
     const zoom = d3.zoom()
         .filter(function(){
@@ -34,7 +39,7 @@ export function d3Zoom(isEditor){
 export function selectContainer(){
     return d3.select('#editor');
 }
-
+// Enables dragging behaviour via left click and drag. Used as above.
 export function d3Drag(){
     let dragged = ()=> {
         let state = EditorState.Nodes[this.uuid];
@@ -49,7 +54,7 @@ export function d3Drag(){
     const div = d3.select(this.dragTarget);
     d3.select(this.handle.current).call(drag);
 }
-
+// Line interface for creating and dynamically changing a line's start and end point.
 class d3Line {
     private line;
     constructor(container, beginPos, endPos){
@@ -81,8 +86,9 @@ class d3Line {
         }
     }
 }
-
+// Connection drawing state when beginning from a input socket
 export function inputDraw(beginPos,index:number){
+    // A new connection is being formed
     if(!EditorState.isConnecting ){
         let newConnection = new ConnectionState();
         newConnection.input = {uuid:this.uuid,index:index};
@@ -91,13 +97,16 @@ export function inputDraw(beginPos,index:number){
         EditorState.beganOnInput = true;
         EditorState.isConnecting = true;
     }
+    // A connection exists and needs to either be discarded or saved.
     else{
         
         let tempConnection = EditorState.peekLastConnection();
         tempConnection.input = {uuid:this.uuid, index: index};
+        // If a connection is made between two inputs or is connecting to the same node it started from, DISCARD the connection.
         if(EditorState.beganOnInput || tempConnection.isSelfReferring()){
             EditorState.getLastConnection().lineObject.removeLine();
         }
+        // If its a valid connection create a complete connection object and store it in the Editor state.
         else{
             tempConnection = EditorState.getLastConnection();
             tempConnection.lineObject = endInputConnection(beginPos,tempConnection.lineObject);            
@@ -107,8 +116,9 @@ export function inputDraw(beginPos,index:number){
         removeMouseOnListener(EditorState.htmlContainer);
     } 
 }
-
+// Connection drawing state when beginning from a output socket
 export function outputDraw(endPos){
+    // A new connection is being formed
     if(!EditorState.isConnecting){
         let newConnection = new ConnectionState();
         newConnection.output = this.uuid;
@@ -116,12 +126,16 @@ export function outputDraw(endPos){
         EditorState.push(newConnection);
         EditorState.beganOnInput = false;
         EditorState.isConnecting = true;
-    }else{
+    }
+    // A connection exists and needs to either be discarded or saved.
+    else{
         let tempConnection = EditorState.peekLastConnection();
         tempConnection.output = this.uuid;
+        // If a connection is made between two outputs or is connecting to the same node it started from, DISCARD the connection.
         if(!EditorState.beganOnInput || tempConnection.isSelfReferring()){
             EditorState.getLastConnection().lineObject.removeLine();
         }
+        // If its a valid connection create a complete connection object and store it in the Editor state.
         else{
             tempConnection = EditorState.getLastConnection();
             tempConnection.lineObject = endOutputConnection(endPos,tempConnection.lineObject);

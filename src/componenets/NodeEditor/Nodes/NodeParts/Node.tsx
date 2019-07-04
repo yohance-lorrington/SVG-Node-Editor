@@ -1,4 +1,9 @@
 import styled from 'styled-components';
+/**
+ * Base styling for our node. TODO: add theming support for the nodes and editor.
+ * @param props.singular is an indicator that the node is either input or output only.
+ * The style is modified to allow the internal elements to take up the full width.
+ */
 
 const Node = styled.div`
     border-radius: 3px;

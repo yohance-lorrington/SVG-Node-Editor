@@ -1,11 +1,17 @@
 import * as React from "react";
 import {createRef} from 'react';
 
-import {EditorState} from '../../global' 
-import {inputDraw, outputDraw} from '../../d3Interactions';
+import {EditorState} from '../../EditorStates' 
+import {inputDraw, outputDraw} from '../../UIinteractions';
 
 import RangeInput from './Input';
-
+/**
+ * This file contains helper functions for creating Nodes using react. This includes generating repeated structures across nodes,
+ * this includes inputs and outputs, along with their respective event handlers.
+ * If a new node is created that doesn't follow the typcial input output design, you can simply implement its UI in a custom manner.
+ * The connection event handlers can then be bound in a similar manner as seen in the 3 functions below.
+ */
+//The following functions initialize refs along with the actual dom elements for use in nodes.
 export function createInputs(structure) {
     this.inpRefs = [];
     this.input = structure.inputs.map((name, i)=>{
@@ -36,7 +42,8 @@ export function createOutputWithRange(structure){
         </div>
     )
 }
-function handleConnection(index){
+//This handles what happens when a user begins or ends a connection, the connection drawing state is controlled by the Editor's state as that is where the connections are stored. 
+export function handleConnection(index){
     let parent = EditorState.Nodes[this.uuid];
     let referencePositon = parent.root.pos;
     if(index===null){
@@ -56,9 +63,9 @@ function handleConnection(index){
     }
 }
 
-function removeInputConnection(index){
+export function removeInputConnection(index){
     EditorState.removeInputConnection({uuid:this.uuid,index:index});
 }
-function removeOutputConnections(){
+export function removeOutputConnections(){
     EditorState.removeOutputConnections(this.uuid);
 }
