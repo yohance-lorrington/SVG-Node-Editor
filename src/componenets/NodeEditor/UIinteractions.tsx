@@ -55,7 +55,7 @@ export function d3Drag(){
     d3.select(this.handle.current).call(drag);
 }
 // Line interface for creating and dynamically changing a line's start and end point.
-class d3Line {
+export class d3Line {
     private line;
     constructor(container, beginPos, endPos){
         this.line = container.append("line")
@@ -210,4 +210,8 @@ function removeMouseOnListener(htmlContainer){
 }
 function disableSelect(event){
     event.preventDefault();
+}
+
+export function shittyLine(begPos,endPos){
+    return  new d3Line(d3.select("#connections"), begPos, endPos);
 }

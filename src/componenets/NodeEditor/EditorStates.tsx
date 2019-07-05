@@ -1,4 +1,4 @@
-import {selectContainer} from './UIinteractions';
+import {selectContainer,d3Line, shittyLine} from './UIinteractions';
 /**
  * This file creates interfaces for all the differen types of information the editor has to keep track of. 
  * A manual state management is used instead of React's state system as all manipulations are happening directly
@@ -123,6 +123,22 @@ export function initNodeState(){
 
     }
 }
+export function generateNodeInputNode(UUID){
+    let numInputs = EditorState.Nodes[UUID].inputs;
+    //need to check if undefined 
+    if(typeof numInputs != "undefined"){
+        EditorState.removeAllInputConnections(UUID);
+        EditorState.removeOutputConnections(UUID);
+    }
+
+    let connection = new ConnectionState();
+    connection.lineObject = shittyLine({x:0,y:0},{x:0,y:0});
+    connection.input ={uuid:UUID, index:0};
+    connection.output = 'whatever';
+    EditorState.addConnection(connection);
+
+    
+}
 export class EditorStateClass{
     public Nodes:any;
     private _beganOnInput:boolean;
@@ -167,6 +183,15 @@ export class EditorStateClass{
     }
     findInputConnection(inputConnection:InputConnection){
         return this._connections.get(this.hash(inputConnection));
+    }
+    removeAllInputConnections(UUID:string){
+        let numInputs = this.Nodes[UUID].inputs;
+        //need to check if undefined 
+        if(typeof numInputs != "undefined"){
+            for(let i:number = 0; i < numInputs; ++i){
+                this.removeInputConnection({uuid:UUID,index:i})
+            }
+        }
     }
     removeInputConnection(inputConnection:InputConnection){
         let connection = this.findInputConnection(inputConnection);
@@ -244,3 +269,4 @@ export class EditorStateClass{
 export const editorUI =  new UITransform(1,0,0);
 
 export const EditorState = new EditorStateClass();
+

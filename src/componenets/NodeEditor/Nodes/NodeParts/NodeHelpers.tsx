@@ -1,7 +1,7 @@
 import * as React from "react";
 import {createRef} from 'react';
 
-import {EditorState} from '../../EditorStates' 
+import {EditorState,generateNodeInputNode} from '../../EditorStates' 
 import {inputDraw, outputDraw} from '../../UIinteractions';
 
 import RangeInput from './Input';
@@ -59,7 +59,8 @@ export function handleConnection(index){
             x: referencePositon.x - inputOffset.x,
             y: referencePositon.y - inputOffset.y
         };
-        inputDraw.bind(this)(inputPosition,index);
+        generateNodeInputNode.bind(this)(this.uuid);
+        //inputDraw.bind(this)(inputPosition,index);
     }
 }
 
