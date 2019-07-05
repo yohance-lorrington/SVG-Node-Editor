@@ -45,7 +45,7 @@ import ASTNode from './NodeParts/ASTNode';
 class ExampleNode extends React.Component<NodeProps> {
     uuid: string;
     title: string;
-    dragTarget: React.Ref<HTMLDivElement>;
+    dragTarget: HTMLDivElement;
     handle : React.Ref<HTMLDivElement>;
     inpRefs: React.Ref<HTMLDivElement>[];
     outRef : React.Ref<HTMLDivElement>;
@@ -76,9 +76,13 @@ class ExampleNode extends React.Component<NodeProps> {
         });
         //this.ASTNode.resolve();
     }
+    shouldComponentUpdate(){return false}
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
+        this.dragTarget.addEventListener('contextmenu',(e)=>{
+            e.stopPropagation();
+        })
     }
     render(){
         return (

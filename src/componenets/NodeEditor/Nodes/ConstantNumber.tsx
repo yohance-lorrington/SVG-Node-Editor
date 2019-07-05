@@ -15,7 +15,7 @@ import ASTNode from './NodeParts/ASTNode';
 class ConstantNumber extends React.Component<NodeProps> {
     uuid: string;
     title: string;
-    dragTarget: React.Ref<HTMLDivElement>;
+    dragTarget: HTMLDivElement;
     handle : React.Ref<HTMLDivElement>;
     outRef : React.Ref<HTMLDivElement>;
     output : JSX.Element;
@@ -37,9 +37,14 @@ class ConstantNumber extends React.Component<NodeProps> {
         this.ASTNode.resolve();
         createOutputWithRange.bind(this)(structure);
     }
+    shouldComponentUpdate(){return false}
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
+        
+        this.dragTarget.addEventListener('contextmenu',(e)=>{
+            e.stopPropagation();
+        })
     }
     render(){
         return (
