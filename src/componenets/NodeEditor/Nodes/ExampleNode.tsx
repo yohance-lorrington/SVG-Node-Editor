@@ -56,7 +56,7 @@ class ExampleNode extends React.Component<NodeProps> {
     constructor(props){
         super(props);
         //initialize UI elements
-        this.uuid = uuidv4();
+        this.uuid = props.identifier;
         this.handle = createRef();
         let structure = {
             title: "Add",
@@ -76,7 +76,6 @@ class ExampleNode extends React.Component<NodeProps> {
         });
         //this.ASTNode.resolve();
     }
-    shouldComponentUpdate(){return false}
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();

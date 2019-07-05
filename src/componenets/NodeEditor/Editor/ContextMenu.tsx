@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {FunctionComponent, useEffect, useState} from 'react';
-
+import {editorUI} from '../EditorStates'
 import * as uuidv4 from 'uuid/v4';
 import ExampleNode from '../Nodes/ExampleNode';
 import ConstantNumber from '../Nodes/ConstantNumber';
@@ -24,19 +24,27 @@ const MenuItem = styled.p`
 interface Props{
     setNodes: Function;
 }
-const ContextMenu = React.forwardRef((props:Props, ctxRef: React.Ref<HTMLDivElement>)=>{
-    const context = React.useContext(NodeList);
-    useEffect(()=>{
-        this.item.addEventListener('click',()=>{
-            //const newNodeList = (context as Array<JSX.Element>).push()
-            props.setNodes([...(context as Array<JSX.Element>), <ExampleNode key={uuidv4()} top={500} left={50}/>]);
-        })
-    });
-
+interface Waw{
+    nodeList: Array<{}>;
+    setNodeList: Function;
+}
+const ContextMenu = React.forwardRef((props, ctxRef: React.Ref<HTMLDivElement>)=>{
+    const {nodeList, setNodeList} = React.useContext(NodeList) as Waw;
+    
+    let yaes = (e)=>{
+        e.stopPropagation();
+        console.log(e.currentTarget.dataset.val)
+        setNodeList([...nodeList,{
+            type: 'ConstantNumber',
+            top: 400,
+            left: 50,
+            key: uuidv4()
+        }])
+    }
     
     return(
         <CtxMenu ref={ctxRef}>
-            <MenuItem ref = {ref=> this.item = ref}> Number </MenuItem>
+            <MenuItem data-val={"ConstantNumber"} onClick={yaes}> Number </MenuItem>
         </CtxMenu>
     );
 });

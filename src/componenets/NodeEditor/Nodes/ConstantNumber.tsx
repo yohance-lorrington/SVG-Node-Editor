@@ -20,10 +20,9 @@ class ConstantNumber extends React.Component<NodeProps> {
     outRef : React.Ref<HTMLDivElement>;
     output : JSX.Element;
     ASTNode: ASTNode;
-    
     constructor(props){
         super(props);
-        this.uuid = uuidv4();
+        this.uuid = props.identifier;
         this.handle = createRef();
         let structure = {
             title: "Number",
@@ -37,7 +36,7 @@ class ConstantNumber extends React.Component<NodeProps> {
         this.ASTNode.resolve();
         createOutputWithRange.bind(this)(structure);
     }
-    shouldComponentUpdate(){return false}
+    shouldComponentUpdate(){return false};
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
