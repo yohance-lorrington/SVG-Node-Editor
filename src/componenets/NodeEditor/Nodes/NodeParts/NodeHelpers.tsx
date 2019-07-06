@@ -1,7 +1,7 @@
 import * as React from "react";
 import {createRef} from 'react';
 
-import {EditorState,generateNodeInputNode} from '../../EditorStates' 
+import {EditorState} from '../../EditorStates' 
 import {inputDraw, outputDraw} from '../../UIinteractions';
 
 import RangeInput from './Input';
@@ -46,6 +46,9 @@ export function createOutputWithRange(structure){
 export function handleConnection(index){
     let parent = EditorState.Nodes[this.uuid];
     let referencePositon = parent.root.pos;
+
+    console.log(parent.root.el);
+    console.log(referencePositon);
     if(index===null){
         let outputOffset = parent.output.ofst;
         let outputPosition = {
@@ -59,8 +62,8 @@ export function handleConnection(index){
             x: referencePositon.x - inputOffset.x,
             y: referencePositon.y - inputOffset.y
         };
-        generateNodeInputNode.bind(this)(this.uuid);
-        //inputDraw.bind(this)(inputPosition,index);
+        // generateNodeInputNode.bind(this)(this.uuid);
+        inputDraw.bind(this)(inputPosition,index);
     }
 }
 

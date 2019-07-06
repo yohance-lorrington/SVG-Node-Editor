@@ -1,4 +1,4 @@
-import {selectContainer,d3Line, shittyLine} from './UIinteractions';
+import {selectContainer,shittyLine} from './UIinteractions';
 /**
  * This file creates interfaces for all the differen types of information the editor has to keep track of. 
  * A manual state management is used instead of React's state system as all manipulations are happening directly
@@ -123,21 +123,37 @@ export function initNodeState(){
 
     }
 }
-export function generateNodeInputNode(UUID){
-    let numInputs = EditorState.Nodes[UUID].inputs;
-    //need to check if undefined 
-    if(typeof numInputs != "undefined"){
-        EditorState.removeAllInputConnections(UUID);
-        EditorState.removeOutputConnections(UUID);
-    }
+export function connectNodes(UUIDofNode1:string,UUIDofNode2:string){
+    let node1 = this.Nodes[UUIDofNode1];
+    let node2 = this.Nodes[UUIDofNode2];
+    if(node1 != null && node2 != null){
+        EditorState.removeAllInputConnections(UUIDofNode1);
+        EditorState.removeOutputConnections(UUIDofNode2);
+        
+        EditorState.removeAllInputConnections(UUIDofNode2);
+        EditorState.removeOutputConnections(UUIDofNode1);
+        
 
-    let connection = new ConnectionState();
-    connection.lineObject = shittyLine({x:0,y:0},{x:0,y:0});
-    connection.input ={uuid:UUID, index:0};
-    connection.output = 'whatever';
-    EditorState.addConnection(connection);
-
+        let node_1_Inputs = EditorState.Nodes[UUIDofNode1].inputs;
+        let node_2_Inputs = EditorState.Nodes[UUIDofNode2].inputs;
     
+        let connection = new ConnectionState();
+        if(typeof node_1_Inputs != "undefined"){
+            let endPos = generateOutputPosition(node2);       
+            let begPos = generateInputPosition(node1,0)
+            connection.input = {uuid:UUIDofNode1,index:0};
+            connection.output  = UUIDofNode2;
+            connection.lineObject = shittyLine(begPos,endPos);
+        }else if(typeof node_2_Inputs != "undefined"){
+            let endPos = generateOutputPosition(node1);       
+            let begPos = generateInputPosition(node2,0)
+            connection.input = {uuid:UUIDofNode2,index:0};
+            connection.output  = UUIDofNode1;
+            connection.lineObject = shittyLine(begPos,endPos);
+        }
+        EditorState.addConnection(connection);
+    
+    }
 }
 export class EditorStateClass{
     public Nodes:any;
@@ -237,10 +253,7 @@ export class EditorStateClass{
         for(let inputconnectionHashed of outputsToUpdate){
             let connection =this._connections.get(inputconnectionHashed);
             if( connection!= null){
-                let point ={
-                    x: parentNode.root.pos.x -  parentNode.output.ofst.x,
-                    y: parentNode.root.pos.y - parentNode.output.ofst.y
-                }
+                let point = generateOutputPosition(parentNode);
                 connection.lineObject.changeEndPoint(point);
             }
         }
@@ -255,16 +268,25 @@ export class EditorStateClass{
         for(let inputconnectionHashed of inputsToUpdate){
             let connectionObject = this._connections.get(inputconnectionHashed);
             if(connectionObject != null){ //probably a stupid check 
-                let point ={
-                    x:  parentNode.root.pos.x -  inputs[connectionObject.input.index].ofst.x ,
-                    y: parentNode.root.pos.y - inputs[connectionObject.input.index].ofst.y
-                }
+                let point = generateInputPosition(parentNode,connectionObject.input.index);
                 connectionObject.lineObject.changeBeginPoint(point);
             }
     
         }
     }
 
+}
+function generateInputPosition(node,index){
+    return {
+        x: node.root.pos.x -  node.inputs[index].ofst.x,
+        y: node.root.pos.y - node.inputs[index].ofst.y
+    }
+}
+function generateOutputPosition(node){
+    return {
+        x: node.root.pos.x -  node.output.ofst.x,
+        y: node.root.pos.y - node.output.ofst.y
+    }
 }
 export const editorUI =  new UITransform(1,0,0);
 

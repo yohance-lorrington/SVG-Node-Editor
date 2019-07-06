@@ -213,5 +213,5 @@ function disableSelect(event){
 }
 
 export function shittyLine(begPos,endPos){
-    return  new d3Line(d3.select("#connections"), begPos, endPos);
+    return new d3Line(d3.select("#connections"), begPos, endPos);
 }
