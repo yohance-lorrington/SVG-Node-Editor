@@ -1,10 +1,9 @@
 import * as React from "react";
 import {createRef} from 'react';
-import * as uuidv4 from 'uuid/v4';
 
 import {d3Drag} from '../UIinteractions';
-import {createOutputWithRange} from './NodeParts/NodeHelpers';
-import {initNodeState} from '../EditorStates';
+import {createInputs, createOutput} from './NodeParts/NodeHelpers';
+import {initNodeState, EditorState} from '../EditorStates';
 
 
 import Node from './NodeParts/Node';
@@ -12,44 +11,62 @@ import Title from './NodeParts/Title';
 import NodeProps from './NodeParts/NodeProps';
 import ASTNode from './NodeParts/ASTNode';
 
-class ConstantNumber extends React.Component<NodeProps> {
+class AddNode extends React.Component<NodeProps> {
     uuid: string;
     title: string;
     dragTarget: HTMLDivElement;
     handle : React.Ref<HTMLDivElement>;
+    inpRefs: React.Ref<HTMLDivElement>[];
     outRef : React.Ref<HTMLDivElement>;
+    input  : JSX.Element[];
     output : JSX.Element;
     ASTNode: ASTNode;
+    
     constructor(props){
         super(props);
+        //initialize UI elements
         this.uuid = props.uuid;
         this.handle = createRef();
         let structure = {
-            title: "Number",
-            output: 'Number'
+            title: "Add",
+            inputs: [
+                'Number 1',
+                'Number 2'
+            ],
+            output: 'Sum'
         };
         this.title = structure.title;
-        let inputs:Array<ASTNode> = new Array<ASTNode>(3);
+        createInputs.bind(this)(structure);
+        createOutput.bind(this)(structure);
+        //initialize AST elements
+        let inputs:Array<ASTNode> = new Array<ASTNode>(2);
+        inputs[0] = new ASTNode(null, ()=>0);
+        inputs[1] = inputs[0];
         this.ASTNode = new ASTNode(inputs, function(){
-            console.log("yayeet");
+            return inputs[0].resolve() + inputs[1].resolve();
         });
-        createOutputWithRange.bind(this)(structure);
+        EditorState.ASTRoot = this.ASTNode;
+        console.log(this.ASTNode.resolve());
     }
-    shouldComponentUpdate(){return false};
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
-        
         this.dragTarget.addEventListener('contextmenu',(e)=>{
             e.stopPropagation();
-        })
+            e.preventDefault();
+        });
+        
     }
     render(){
         return (
-            <Node width={200} singular ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
+            <Node width={170} ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
                 <Title ref={this.handle} title={this.title}/>
                 
                 <div className="connections">
+                    <div className="inputs">
+                        {this.input}
+                    </div>
+                    <div className="vr"></div>
                     <div className="outputs">
                         {this.output}
                     </div>
@@ -59,4 +76,4 @@ class ConstantNumber extends React.Component<NodeProps> {
     }
 }
 
-export default ConstantNumber;
+export default AddNode;

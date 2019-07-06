@@ -1,4 +1,5 @@
 import {selectContainer,shittyLine} from './UIinteractions';
+import ASTNode from './Nodes/NodeParts/ASTNode';
 /**
  * This file creates interfaces for all the differen types of information the editor has to keep track of. 
  * A manual state management is used instead of React's state system as all manipulations are happening directly
@@ -124,7 +125,6 @@ export function initNodeState(){
         inputs: inputStates,
         output: outputState,
         nodeFunction: this.ASTNode
-
     }
 }
 export function connectNodes(UUIDofNode1:string,UUIDofNode2:string){
@@ -166,6 +166,7 @@ export class EditorStateClass{
     private _tempConnectionAddress:string = this.hash({uuid:'',index:-1});
     public _connections:Map<string,ConnectionState>;
     private _container:any;
+    public ASTRoot: ASTNode;
     constructor(){
         this.Nodes = {};
         this._container = null;
@@ -216,8 +217,10 @@ export class EditorStateClass{
     removeInputConnection(inputConnection:InputConnection){
         let connection = this.findInputConnection(inputConnection);
         if(!!connection){ 
-             connection.lineObject.removeLine();
-             this._connections.delete(this.hash(connection.input));
+            connection.lineObject.removeLine();
+            this._connections.delete(this.hash(connection.input));
+            this.Nodes[connection.input.uuid].nodeFunction.resetInput(connection.input.index);
+            console.log(this.ASTRoot.resolve());
         } 
     }
     removeOutputConnections(outputUUID:string){

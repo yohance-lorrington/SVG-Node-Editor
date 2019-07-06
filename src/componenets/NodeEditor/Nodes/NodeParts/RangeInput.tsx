@@ -13,7 +13,7 @@ const Range = styled.input`
         -webkit-appearance: none;
         margin-top: -1px;
     }
-   &::-webkit-slider-thumb {
+    &::-webkit-slider-thumb {
         width: 0px;
         -webkit-appearance: none;
         box-shadow: -500px 0 0 500px #a05e5e;
@@ -44,6 +44,7 @@ interface State{
 }
 interface NodeProps{
     title: string;
+    setVal: Function;
 }
 
 class RangeInput extends React.Component<NodeProps,State>{
@@ -53,19 +54,20 @@ class RangeInput extends React.Component<NodeProps,State>{
             value: '0.500'
         }
     }
-    setLabelValue(e){
+    handleChange(e){
+        let val = parseFloat(e.target.value);
+        this.props.setVal(val);
         this.setState({
-            value: parseFloat(e.target.value).toFixed(3)
+            value: val.toFixed(3)
         });
     }
     render(){
         return(
             <InternalTitle>
                 <label htmlFor="">{this.props.title}: {this.state.value}</label>
-                <Range type="range" min="0" max="1" step="0.001" onChange={this.setLabelValue.bind(this)} value={this.state.value}/>
+                <Range type="range" min="0" max="1" step="0.001" onChange={this.handleChange.bind(this)} value={this.state.value}/>
             </InternalTitle>
-            );
+        );
     }
 }
-
 export default RangeInput;
