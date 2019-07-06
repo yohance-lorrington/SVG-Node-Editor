@@ -76,7 +76,10 @@ export class ConnectionState {
 }
 // Uses the ref's and ASTNode to create the State object for each node. 
 export function initNodeState(){
-    //console.log(this.uuid)
+    
+    if(!EditorState.htmlContainer) 
+        EditorState.htmlContainer = selectContainer();
+    
     let root = this.dragTarget.getBoundingClientRect();
     let inputStates;
     if(this.inpRefs){
@@ -109,8 +112,7 @@ export function initNodeState(){
             ofst: outOffset
         }; // stores the position of the output as an offset from the nodes base location.
     }
-    if(!EditorState.htmlContainer) 
-        EditorState.htmlContainer = selectContainer();
+    
     EditorState.Nodes[this.uuid] = {
         root: {
             el:this.dragTarget,
@@ -124,8 +126,6 @@ export function initNodeState(){
         nodeFunction: this.ASTNode
 
     }
-    console.log(root);
-    console.log(EditorState.Nodes[this.uuid].root);
 }
 export class EditorStateClass{
     public Nodes:any;

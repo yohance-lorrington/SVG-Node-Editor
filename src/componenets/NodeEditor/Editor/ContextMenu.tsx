@@ -1,13 +1,12 @@
 import * as React from 'react';
-import {FunctionComponent, useEffect, useState} from 'react';
 import {editorUI} from '../EditorStates'
 import * as uuidv4 from 'uuid/v4';
-import ExampleNode from '../Nodes/ExampleNode';
-import ConstantNumber from '../Nodes/ConstantNumber';
-import NodeList, {NodeProvider, NodeConsumer} from './EditorContext';
+import NodeList from './EditorContext';
 import styled from 'styled-components';
 
 const CtxMenu = styled.div`
+    box-sizing: border-box;
+    padding-top: 10px;
     width: 200px;
     height: 100px;
     position: absolute;
@@ -17,35 +16,31 @@ const CtxMenu = styled.div`
 `;
 
 const MenuItem = styled.p`
-    padding: 15px;
+    padding: 5px 15px;
     cursor: pointer;
     color: white;
     margin: 0;
 `
-interface Props{
-    setNodes: Function;
+interface ContextMenuProps{
+    getPos: Function
 }
-interface Waw{
-    nodeList: Array<{}>;
-    setNodeList: Function;
-}
-const ContextMenu = React.forwardRef((props, ctxRef: React.Ref<HTMLDivElement>)=>{
-    const {nodeList, setNodeList} = React.useContext(NodeList) as Waw;
-    
-    let yaes = (e)=>{
+const ContextMenu = React.forwardRef((props: ContextMenuProps, ctxRef: React.Ref<HTMLDivElement>)=>{
+    const {nodeList, setNodeList} = React.useContext(NodeList);
+    let addNode = (e)=>{
         e.stopPropagation();
-        console.log(e.currentTarget.dataset.val)
+        let pos = props.getPos();
         setNodeList([...nodeList,{
-            type: 'ConstantNumber',
-            top: 400,
-            left: 50,
+            type: e.currentTarget.dataset.val,
+            top: (pos.y-editorUI.y)/editorUI.scale,
+            left: (pos.x-editorUI.x)/editorUI.scale,
             key: uuidv4()
         }])
     }
     
     return(
         <CtxMenu ref={ctxRef}>
-            <MenuItem data-val={"ConstantNumber"} onClick={yaes}> Number </MenuItem>
+            <MenuItem data-val={"ConstantNumber"} onClick={addNode}> Number </MenuItem>
+            <MenuItem data-val={"ExampleNode"} onClick={addNode}> Add </MenuItem>
         </CtxMenu>
     );
 });
