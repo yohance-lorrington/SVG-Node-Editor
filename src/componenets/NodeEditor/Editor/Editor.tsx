@@ -6,8 +6,8 @@ import {d3Zoom} from '../UIinteractions';
 import * as uuidv4 from 'uuid/v4';
 import EditorBG from './EditorBG';
 import ContextMenu from './ContextMenu';
-import ExampleNode from '../Nodes/ExampleNode';
-import ConstantNumber from '../Nodes/ConstantNumber';
+import AddNode from '../Nodes/AddNode';
+import RangeNode from '../Nodes/RangeNode';
 
 import {EditorNode, NodeProvider, NodeConsumer} from './EditorContext';
 
@@ -63,9 +63,9 @@ const NodeEditor: FunctionComponent = ()=>{
         return value.nodeList.map((node)=>{
             switch(node.type){
                 case "ExampleNode":
-                    return <ExampleNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
+                    return <AddNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
                 case "ConstantNumber":
-                    return <ConstantNumber key={node.key} uuid={node.key} top={node.top} left={node.left}/>    
+                    return <RangeNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>    
             }
         })
     }
