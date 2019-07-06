@@ -7,7 +7,7 @@ import styled from 'styled-components';
 
 const Node = styled.div`
     border-radius: 3px;
-    width: 200px;
+    width: ${props=>props.width}px;
     background: white;
     padding-bottom: 3px;
     position: absolute;

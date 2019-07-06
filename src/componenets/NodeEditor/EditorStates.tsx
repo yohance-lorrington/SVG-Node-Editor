@@ -76,17 +76,22 @@ export class ConnectionState {
 }
 // Uses the ref's and ASTNode to create the State object for each node. 
 export function initNodeState(){
+    
+    if(!EditorState.htmlContainer) 
+        EditorState.htmlContainer = selectContainer();
+    
+    let root = this.dragTarget.getBoundingClientRect();
     let inputStates;
     if(this.inpRefs){
         let inputRects = [];
         for(var inRef of this.inpRefs){
-            inputRects.push(inRef.current.getBoundingClientRect()) // Calculates boudning rectangle only once during initialization. 
+            inputRects.push(inRef.current.getBoundingClientRect()) // Calculates bounding rectangle only once during initialization. 
         };
         let inpOffsets = [];
         for(var rect of inputRects){
             let offset = {
-                x: (this.props.left - (rect.left+rect.right)/2),
-                y: (this.props.top - (rect.top+rect.bottom)/2) - window.scrollY
+                x: (root.x  - (rect.left+rect.right)/2 )/editorUI.scale,
+                y: (root.y  - (rect.top+rect.bottom)/2)/editorUI.scale
             }; // stores the position of the inputs as an offset from the nodes base location.
             inpOffsets.push(offset);
         }
@@ -97,24 +102,23 @@ export function initNodeState(){
     }
     let outputState;
     if(this.outRef){
-        let outRect = this.outRef.current.getBoundingClientRect(); // Calculates boudning rectangle only once during initialization. 
+        let outRect = this.outRef.current.getBoundingClientRect(); // Calculates bounding rectangle only once during initialization. 
         let outOffset = {
-            x: (this.props.left - (outRect.left+outRect.right)/2),
-            y: (this.props.top - (outRect.top+outRect.bottom)/2) - window.scrollY
+            x: (root.x  - (outRect.left+outRect.right)/2)/editorUI.scale,
+            y: (root.y  - (outRect.top+outRect.bottom)/2)/editorUI.scale
         };
         outputState = {
             el: this.outRef.current,
             ofst: outOffset
         }; // stores the position of the output as an offset from the nodes base location.
     }
-    if(!EditorState.htmlContainer) 
-        EditorState.htmlContainer = selectContainer();
+    
     EditorState.Nodes[this.uuid] = {
         root: {
             el:this.dragTarget,
             pos: {
-                x: this.props.left,
-                y: this.props.top
+                x: (root.x-editorUI.x)/editorUI.scale,
+                y: (root.y-editorUI.y)/editorUI.scale
             }
         },
         inputs: inputStates,

@@ -46,9 +46,6 @@ export function createOutputWithRange(structure){
 export function handleConnection(index){
     let parent = EditorState.Nodes[this.uuid];
     let referencePositon = parent.root.pos;
-
-    console.log(parent.root.el);
-    console.log(referencePositon);
     if(index===null){
         let outputOffset = parent.output.ofst;
         let outputPosition = {

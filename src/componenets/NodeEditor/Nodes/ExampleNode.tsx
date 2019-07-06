@@ -56,7 +56,7 @@ class ExampleNode extends React.Component<NodeProps> {
     constructor(props){
         super(props);
         //initialize UI elements
-        this.uuid = uuidv4();
+        this.uuid = props.uuid;
         this.handle = createRef();
         let structure = {
             title: "Add",
@@ -76,7 +76,6 @@ class ExampleNode extends React.Component<NodeProps> {
         });
         //this.ASTNode.resolve();
     }
-    shouldComponentUpdate(){return false}
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
@@ -86,7 +85,7 @@ class ExampleNode extends React.Component<NodeProps> {
     }
     render(){
         return (
-            <Node ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
+            <Node width={200} ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
                 <Title ref={this.handle} title={this.title}/>
                 
                 <div className="connections">

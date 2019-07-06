@@ -20,10 +20,9 @@ class ConstantNumber extends React.Component<NodeProps> {
     outRef : React.Ref<HTMLDivElement>;
     output : JSX.Element;
     ASTNode: ASTNode;
-    
     constructor(props){
         super(props);
-        this.uuid = uuidv4();
+        this.uuid = props.uuid;
         this.handle = createRef();
         let structure = {
             title: "Number",
@@ -34,10 +33,9 @@ class ConstantNumber extends React.Component<NodeProps> {
         this.ASTNode = new ASTNode(inputs, function(){
             console.log("yayeet");
         });
-        this.ASTNode.resolve();
         createOutputWithRange.bind(this)(structure);
     }
-    shouldComponentUpdate(){return false}
+    shouldComponentUpdate(){return false};
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
@@ -48,7 +46,7 @@ class ConstantNumber extends React.Component<NodeProps> {
     }
     render(){
         return (
-            <Node singular={true} ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
+            <Node width={200} singular ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
                 <Title ref={this.handle} title={this.title}/>
                 
                 <div className="connections">
