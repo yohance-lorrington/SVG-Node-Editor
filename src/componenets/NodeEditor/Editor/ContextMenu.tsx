@@ -18,6 +18,7 @@ const CtxMenu = styled.div`
 
 const MenuItem = styled.p`
     padding: 15px;
+    cursor: pointer;
     color: white;
     margin: 0;
 `
