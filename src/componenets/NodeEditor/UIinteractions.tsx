@@ -112,7 +112,7 @@ export function inputDraw(beginPos,index:number){
             tempConnection.lineObject = endInputConnection(beginPos,tempConnection.lineObject);            
             EditorState.addConnection(tempConnection);
             EditorState.Nodes[tempConnection.input.uuid].nodeFunction.setInput(EditorState.Nodes[tempConnection.output].nodeFunction,tempConnection.input.index);
-            console.log(EditorState.ASTRoot.resolve());
+            EditorState.ASTRoot.resolve();
         }
         EditorState.isConnecting = false;
         removeMouseOnListener(EditorState.htmlContainer);
@@ -143,7 +143,7 @@ export function outputDraw(endPos){
             tempConnection.lineObject = endOutputConnection(endPos,tempConnection.lineObject);
             EditorState.addConnection(tempConnection);
             EditorState.Nodes[tempConnection.input.uuid].nodeFunction.setInput(EditorState.Nodes[tempConnection.output].nodeFunction,tempConnection.input.index);
-            console.log(EditorState.ASTRoot.resolve());
+            EditorState.ASTRoot.resolve();
         }
         EditorState.isConnecting = false;
         removeMouseOnListener(EditorState.htmlContainer);

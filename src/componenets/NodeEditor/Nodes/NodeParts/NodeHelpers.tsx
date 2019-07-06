@@ -5,6 +5,7 @@ import {EditorState} from '../../EditorStates'
 import {inputDraw, outputDraw} from '../../UIinteractions';
 
 import RangeInput from './RangeInput';
+import ConstantInput from './ConstantInput';
 /**
  * This file contains helper functions for creating Nodes using react. This includes generating repeated structures across nodes,
  * this includes inputs and outputs, along with their respective event handlers.
@@ -33,11 +34,28 @@ export function createOutput(structure) {
         </div>
     )
 }
+export function createInputOnly(){
+    this.input = (
+        <div className="input">
+            <div onMouseUp={handleConnection.bind(this, 0)} onMouseDown={handleConnection.bind(this, 0)} onClick={removeInputConnection.bind(this,0)} ref={this.inpRefs[0]} className="in connector"></div>
+            {this.state.value}
+        </div>
+    )
+}
 export function createOutputWithRange(structure){
     this.outRef = createRef();
     this.output = (
         <div className="output">            
             <RangeInput setVal={this.setValue.bind(this)} title={structure.output}/>
+            <div onMouseUp={handleConnection.bind(this,null)} onMouseDown={handleConnection.bind(this,null)} ref={this.outRef} className="out connector"></div>
+        </div>
+    )
+}
+export function createOutputWithField(structure){
+    this.outRef = createRef();
+    this.output = (
+        <div className="output">
+            <ConstantInput setVal={this.setValue.bind(this)}/>
             <div onMouseUp={handleConnection.bind(this,null)} onMouseDown={handleConnection.bind(this,null)} ref={this.outRef} className="out connector"></div>
         </div>
     )

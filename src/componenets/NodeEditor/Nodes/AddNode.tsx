@@ -30,8 +30,8 @@ class AddNode extends React.Component<NodeProps> {
         let structure = {
             title: "Add",
             inputs: [
-                'Number 1',
-                'Number 2'
+                'A',
+                'B'
             ],
             output: 'Sum'
         };
@@ -45,8 +45,6 @@ class AddNode extends React.Component<NodeProps> {
         this.ASTNode = new ASTNode(inputs, function(){
             return inputs[0].resolve() + inputs[1].resolve();
         });
-        EditorState.ASTRoot = this.ASTNode;
-        console.log(this.ASTNode.resolve());
     }
     componentDidMount(){
         d3Drag.bind(this)();
@@ -59,7 +57,7 @@ class AddNode extends React.Component<NodeProps> {
     }
     render(){
         return (
-            <Node width={170} ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
+            <Node width={110} ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
                 <Title ref={this.handle} title={this.title}/>
                 
                 <div className="connections">

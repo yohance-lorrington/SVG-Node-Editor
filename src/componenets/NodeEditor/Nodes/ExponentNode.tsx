@@ -3,7 +3,7 @@ import {createRef} from 'react';
 
 import {d3Drag} from '../UIinteractions';
 import {createInputs, createOutput} from './NodeParts/NodeHelpers';
-import {initNodeState} from '../EditorStates';
+import {initNodeState, EditorState} from '../EditorStates';
 
 
 import Node from './NodeParts/Node';
@@ -11,7 +11,7 @@ import Title from './NodeParts/Title';
 import NodeProps from './NodeParts/NodeProps';
 import ASTNode from './NodeParts/ASTNode';
 
-class ExampleNode extends React.Component<NodeProps> {
+class ExponentNode extends React.Component<NodeProps> {
     uuid: string;
     title: string;
     dragTarget: HTMLDivElement;
@@ -28,20 +28,22 @@ class ExampleNode extends React.Component<NodeProps> {
         this.uuid = props.uuid;
         this.handle = createRef();
         let structure = {
-            title: "Example",
+            title: "Exponent",
             inputs: [
-                'Input 1',
-                'Input 2'
+                'A',
+                'Exp'
             ],
-            output: 'Output'
+            output: 'Exp'
         };
         this.title = structure.title;
         createInputs.bind(this)(structure);
         createOutput.bind(this)(structure);
         //initialize AST elements
-        let inputs:Array<ASTNode> = new Array<ASTNode>(3);
+        let inputs:Array<ASTNode> = new Array<ASTNode>(2);
+        inputs[0] = new ASTNode(null, ()=>1);
+        inputs[1] = new ASTNode(null, ()=>2);
         this.ASTNode = new ASTNode(inputs, function(){
-            console.log("YEET")
+            return Math.pow(inputs[0].resolve(),inputs[1].resolve());
         });
     }
     componentDidMount(){
@@ -51,12 +53,12 @@ class ExampleNode extends React.Component<NodeProps> {
             e.stopPropagation();
             e.preventDefault();
         });
+        
     }
     render(){
         return (
-            <Node width={170} ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
+            <Node width={140} ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
                 <Title ref={this.handle} title={this.title}/>
-                
                 <div className="connections">
                     <div className="inputs">
                         {this.input}
@@ -71,4 +73,4 @@ class ExampleNode extends React.Component<NodeProps> {
     }
 }
 
-export default ExampleNode;
+export default ExponentNode;

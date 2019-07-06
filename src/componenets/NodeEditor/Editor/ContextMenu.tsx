@@ -6,9 +6,8 @@ import styled from 'styled-components';
 
 const CtxMenu = styled.div`
     box-sizing: border-box;
-    padding-top: 10px;
+    padding: 10px 0;
     width: 200px;
-    height: 100px;
     position: absolute;
     border-radius: 4px;
     background: rgba(0.4,0.4,0.4,0.8);
@@ -39,8 +38,14 @@ const ContextMenu = React.forwardRef((props: ContextMenuProps, ctxRef: React.Ref
     
     return(
         <CtxMenu ref={ctxRef}>
-            <MenuItem data-val={"ConstantNumber"} onClick={addNode}> Number </MenuItem>
-            <MenuItem data-val={"ExampleNode"} onClick={addNode}> Add </MenuItem>
+            <MenuItem data-val={"ConstantNode"} onClick={addNode}> Constant </MenuItem>
+            <MenuItem data-val={"RangeNode"} onClick={addNode}> Range </MenuItem>
+            <MenuItem data-val={"AddNode"} onClick={addNode}> Add </MenuItem>
+            <MenuItem data-val={"SubtractNode"} onClick={addNode}> Subtract </MenuItem>
+            <MenuItem data-val={"MultiplyNode"} onClick={addNode}> Multiply </MenuItem>
+            <MenuItem data-val={"DivideNode"} onClick={addNode}> Divide </MenuItem>
+            <MenuItem data-val={"AbsNode"} onClick={addNode}> Absolute </MenuItem>
+            <MenuItem data-val={"ExponentNode"} onClick={addNode}> Exponent </MenuItem>
         </CtxMenu>
     );
 });
