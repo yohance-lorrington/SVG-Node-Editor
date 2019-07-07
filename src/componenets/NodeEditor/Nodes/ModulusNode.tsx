@@ -11,7 +11,7 @@ import Title from './NodeParts/Title';
 import NodeProps from './NodeParts/NodeProps';
 import ASTNode from './NodeParts/ASTNode';
 
-class AbsNode extends React.Component<NodeProps> {
+class ModulusNode extends React.Component<NodeProps> {
     uuid: string;
     title: string;
     dragTarget: HTMLDivElement;
@@ -28,20 +28,25 @@ class AbsNode extends React.Component<NodeProps> {
         this.uuid = props.uuid;
         this.handle = createRef();
         let structure = {
-            title: "Absolute",
+            title: "Modulus",
             inputs: [
                 'A',
+                'B'
             ],
-            output: 'Abs'
+            output: 'Mod'
         };
         this.title = structure.title;
         createInputs.bind(this)(structure);
         createOutput.bind(this)(structure);
         //initialize AST elements
         let inputs:Array<ASTNode> = new Array<ASTNode>(2);
-        inputs[0] = new ASTNode(null, ()=>0);
+        inputs[0] = new ASTNode(null, ()=>1);
+        inputs[1] = inputs[0];
         this.ASTNode = new ASTNode(inputs, function(){
-            return Math.abs(inputs[0].resolve());
+            let b = inputs[1].resolve()
+            if(b!==0)
+                return inputs[0].resolve()%inputs[1].resolve();
+            else return -1;
         });
     }
     componentDidMount(){
@@ -55,7 +60,7 @@ class AbsNode extends React.Component<NodeProps> {
     }
     render(){
         return (
-            <Node width={100} ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
+            <Node width={140} ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
                 <Title ref={this.handle} title={this.title}/>
                 <div className="connections">
                     <div className="inputs">
@@ -71,4 +76,4 @@ class AbsNode extends React.Component<NodeProps> {
     }
 }
 
-export default AbsNode;
+export default ModulusNode;

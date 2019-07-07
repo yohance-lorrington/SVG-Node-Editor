@@ -51,7 +51,7 @@ class DisplayNode extends React.Component<NodeProps,{value: number}> {
     }
     render(){
         return (
-            <Node width={150} singular ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
+            <Node width={100} singular ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
                 <Title ref={this.handle} title={this.title}/>
                 
                 <div className="connections">

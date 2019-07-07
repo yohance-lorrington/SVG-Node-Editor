@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import {FunctionComponent, useEffect, useState} from 'react';
 import {d3Zoom} from '../UIinteractions';
 
@@ -15,6 +14,7 @@ import DivideNode from '../Nodes/DivideNode';
 import RangeNode from '../Nodes/RangeNode';
 import ConstantNode from '../Nodes/ConstantNode';
 import AbsNode from '../Nodes/AbsNode';
+import ModulusNode from '../Nodes/ModulusNode';
 import ExponentNode from '../Nodes/ExponentNode';
 
 import {EditorNode, NodeProvider, NodeConsumer} from './EditorContext';
@@ -24,13 +24,13 @@ const NodeEditor: FunctionComponent = ()=>{
     useEffect(d3Zoom.bind(this, true)); //enables panning and zooming via d3's zoom functionality, also updates the editor's state(non-react incase it needs to be used with a different front end solution)
     useEffect(()=>{
         this.svg.addEventListener('contextmenu', showContextmenu);
-        document.addEventListener('click', hideContextMenu)
+        this.editor.addEventListener('click', hideContextMenu)
     });
     let [nodeList,setNodeList] = useState<Array<EditorNode>>([
         {
             type: 'DisplayNode',
             top: 100,
-            left: 180,
+            left: window.innerWidth-200,
             key: uuidv4()
         },
         {
@@ -61,8 +61,8 @@ const NodeEditor: FunctionComponent = ()=>{
         visible = true;
         showMenu(true);
     }
-    let hideContextMenu = ()=>{
-        if(visible){
+    let hideContextMenu = (e)=>{
+        if(visible && !(e.target.id == 'ctxSearch')){
             showMenu(false);
             visible = false;
         }
@@ -83,9 +83,11 @@ const NodeEditor: FunctionComponent = ()=>{
                 case "MultiplyNode":
                     return <MultiplyNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
                 case "DivideNode":
-                        return <DivideNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
+                    return <DivideNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
                 case "AbsNode":
                     return <AbsNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
+                case "ModulusNode":
+                    return <ModulusNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
                 case "ExponentNode":
                     return <ExponentNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
         }
@@ -93,7 +95,7 @@ const NodeEditor: FunctionComponent = ()=>{
     }
     return (
         <NodeProvider value={{nodeList: nodeList, setNodeList: setNodeList}}>
-        <EditorBG>
+        <EditorBG ref={ref=>this.editor = ref}>
             <svg id="editor"  ref={svg => this.svg = svg} width="100%" height="100%" >
                 <g width="100%" height="100%" ref={ui => this.ui = ui}>
                     <g width="100%" height="100%" id="connections"></g>
