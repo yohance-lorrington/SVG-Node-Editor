@@ -8,7 +8,7 @@ import styled from 'styled-components';
 const Node = styled.div`
     border-radius: 3px;
     width: ${props=>props.width}px;
-    background: white;
+    background: ${props=>props.color || 'white'};
     padding-bottom: 3px;
     position: absolute;
     z-index: 1;
@@ -17,7 +17,8 @@ const Node = styled.div`
         padding: 5px;
         font-size: 0.9em;
         border-radius: 3px 3px 0 0;
-        background: #bbb;
+        background:${props=>props.color|| 'white'};
+        filter: brightness(80%);
         margin: 0;
     }
     .connections{
@@ -46,7 +47,7 @@ const Node = styled.div`
         width: 8px;
         height: 8px;
         border-radius: 100px;
-        background: #a05e5e;
+        background: #fc9a9a;
         border: 1px solid black;
     }
     .vr{

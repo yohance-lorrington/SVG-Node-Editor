@@ -4,7 +4,6 @@ import * as React from "react";
 const Const = styled.input`
     width: 100%;
     border: none;
-    border-radius: 3px;
     overflow: hidden;
     margin: 0;
     -webkit-appearance: none;
@@ -33,6 +32,9 @@ class ConstantInput extends React.Component<NodeProps,State>{
     handleChange(e){
         if(e.target.value == ''){
             e.target.value = '0'
+        }
+        else if(e.target.value[0]==='0'&&e.target.value.length>1){
+            e.target.value = e.target.value.replace(/^0+/, '')
         }
         let val = parseFloat(e.target.value);
         this.props.setVal(val);
