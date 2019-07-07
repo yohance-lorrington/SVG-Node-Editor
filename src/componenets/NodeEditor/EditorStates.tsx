@@ -1,4 +1,4 @@
-import {selectContainer,shittyLine} from './UIinteractions';
+import {selectContainer,createLine} from './UIinteractions';
 import ASTNode from './Nodes/NodeParts/ASTNode';
 /**
  * This file creates interfaces for all the differen types of information the editor has to keep track of. 
@@ -127,38 +127,44 @@ export function initNodeState(){
         nodeFunction: this.ASTNode
     }
 }
-export function connectNodes(UUIDofNode1:string,UUIDofNode2:string){
-    let node1 = this.Nodes[UUIDofNode1];
-    let node2 = this.Nodes[UUIDofNode2];
+export function connectNodes(inputConnection:InputConnection,UUIDofNode2:string){
+    let node1 = EditorState.Nodes[inputConnection.uuid];
+    let node2 = EditorState.Nodes[UUIDofNode2];
     if(node1 != null && node2 != null){
-        EditorState.removeAllInputConnections(UUIDofNode1);
-        EditorState.removeOutputConnections(UUIDofNode2);
-        
-        EditorState.removeAllInputConnections(UUIDofNode2);
-        EditorState.removeOutputConnections(UUIDofNode1);
-        
-
-        let node_1_Inputs = EditorState.Nodes[UUIDofNode1].inputs;
-        let node_2_Inputs = EditorState.Nodes[UUIDofNode2].inputs;
-    
+        let node_1_Inputs = EditorState.Nodes[inputConnection.uuid].inputs;
+       
+        EditorState.removeInputConnection(inputConnection);
         let connection = new ConnectionState();
         if(typeof node_1_Inputs != "undefined"){
             let endPos = generateOutputPosition(node2);       
-            let begPos = generateInputPosition(node1,0)
-            connection.input = {uuid:UUIDofNode1,index:0};
+            let begPos = generateInputPosition(node1,inputConnection.index)
+            connection.input = inputConnection;
             connection.output  = UUIDofNode2;
-            connection.lineObject = shittyLine(begPos,endPos);
-        }else if(typeof node_2_Inputs != "undefined"){
-            let endPos = generateOutputPosition(node1);       
-            let begPos = generateInputPosition(node2,0)
-            connection.input = {uuid:UUIDofNode2,index:0};
-            connection.output  = UUIDofNode1;
-            connection.lineObject = shittyLine(begPos,endPos);
+            connection.lineObject = createLine(begPos,endPos);
+
+            EditorState.addConnection(connection);
+            EditorState.Nodes[inputConnection.uuid].nodeFunction.setInput(EditorState.Nodes[UUIDofNode2].nodeFunction,inputConnection.index);
+        
         }
-        EditorState.addConnection(connection);
-    
+
     }
 }
+export function deleteNode(NodeUUID){
+    let node1 = EditorState.Nodes[NodeUUID];
+
+    if(node1 != null){
+        let node_1_Inputs = node1.inputs;
+        if(typeof node_1_Inputs != "undefined"){
+            EditorState.removeAllInputConnections(NodeUUID);
+            EditorState.removeOutputConnections(NodeUUID);
+
+            delete EditorState.Nodes[NodeUUID];
+        }
+
+    }
+
+}
+
 export class EditorStateClass{
     public Nodes:any;
     private _beganOnInput:boolean;
@@ -220,7 +226,6 @@ export class EditorStateClass{
             connection.lineObject.removeLine();
             this._connections.delete(this.hash(connection.input));
             this.Nodes[connection.input.uuid].nodeFunction.resetInput(connection.input.index);
-            console.log(this.ASTRoot.resolve());
         } 
     }
     removeOutputConnections(outputUUID:string){

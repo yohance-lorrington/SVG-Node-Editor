@@ -6,8 +6,16 @@ import {d3Zoom} from '../UIinteractions';
 import * as uuidv4 from 'uuid/v4';
 import EditorBG from './EditorBG';
 import ContextMenu from './ContextMenu';
+import {connectNodes} from '../EditorStates'
+import DisplayNode from '../Nodes/DisplayNode';
 import AddNode from '../Nodes/AddNode';
+import SubtractNode from '../Nodes/SubtractNode';
+import MultiplyNode from '../Nodes/MultiplyNode';
+import DivideNode from '../Nodes/DivideNode';
 import RangeNode from '../Nodes/RangeNode';
+import ConstantNode from '../Nodes/ConstantNode';
+import AbsNode from '../Nodes/AbsNode';
+import ExponentNode from '../Nodes/ExponentNode';
 
 import {EditorNode, NodeProvider, NodeConsumer} from './EditorContext';
 
@@ -20,13 +28,25 @@ const NodeEditor: FunctionComponent = ()=>{
     });
     let [nodeList,setNodeList] = useState<Array<EditorNode>>([
         {
-            type: 'ExampleNode',
+            type: 'DisplayNode',
             top: 100,
-            left: 50,
+            left: 180,
             key: uuidv4()
         },
         {
-            type: 'ConstantNumber',
+            type: 'ConstantNode',
+            top: 100,
+            left: 50,
+            key: uuidv4()
+        }, 
+        {
+            type: 'AddNode',
+            top: 200,
+            left: 50,
+            key: uuidv4()
+        },        
+        {
+            type: 'SubtractNode',
             top: 300,
             left: 50,
             key: uuidv4()
@@ -62,13 +82,28 @@ const NodeEditor: FunctionComponent = ()=>{
     let createNodes = (value)=>{
         return value.nodeList.map((node)=>{
             switch(node.type){
-                case "ExampleNode":
+                case "DisplayNode":
+                    return <DisplayNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>    
+                case "ConstantNode":
+                    return <ConstantNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>    
+                case "RangeNode":
+                    return <RangeNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
+                case "AddNode":
                     return <AddNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
-                case "ConstantNumber":
-                    return <RangeNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>    
-            }
+                case "SubtractNode":
+                    return <SubtractNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>   
+                case "MultiplyNode":
+                    return <MultiplyNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
+                case "DivideNode":
+                        return <DivideNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
+                case "AbsNode":
+                    return <AbsNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
+                case "ExponentNode":
+                    return <ExponentNode key={node.key} uuid={node.key} top={node.top} left={node.left}/>
+        }
         })
     }
+    useEffect(()=>{connectNodes({uuid:nodeList[2].key,index:0},nodeList[1].key)});
     return (
         <NodeProvider value={{nodeList: nodeList, setNodeList: setNodeList}}>
         <EditorBG>

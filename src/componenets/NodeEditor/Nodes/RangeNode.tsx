@@ -33,7 +33,6 @@ class RangeNode extends React.Component<NodeProps> {
         this.ASTNode = new ASTNode(null, ()=>{
             return this.value;
         });
-        console.log(this.ASTNode.resolve());
         createOutputWithRange.bind(this)(structure);
     }
     shouldComponentUpdate(){return false};
@@ -48,7 +47,7 @@ class RangeNode extends React.Component<NodeProps> {
     
     setValue(value: number){
         this.value = value;
-        console.log(EditorState.ASTRoot.resolve());
+        EditorState.ASTRoot.resolve();
     }
     render(){
         return (

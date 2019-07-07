@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 
-import {editorUI,EditorState,ConnectionState,EditorStateClass} from './EditorStates';
+import {editorUI,EditorState,ConnectionState,deleteNode,EditorStateClass} from './EditorStates';
+
 /**
  * This file contains d3 functionality tailored towards our specific use case. 
  * It exposes simple functions for enabling d3's user interaction.
@@ -112,7 +113,7 @@ export function inputDraw(beginPos,index:number){
             tempConnection.lineObject = endInputConnection(beginPos,tempConnection.lineObject);            
             EditorState.addConnection(tempConnection);
             EditorState.Nodes[tempConnection.input.uuid].nodeFunction.setInput(EditorState.Nodes[tempConnection.output].nodeFunction,tempConnection.input.index);
-            console.log(EditorState.ASTRoot.resolve());
+            EditorState.ASTRoot.resolve();
         }
         EditorState.isConnecting = false;
         removeMouseOnListener(EditorState.htmlContainer);
@@ -143,7 +144,7 @@ export function outputDraw(endPos){
             tempConnection.lineObject = endOutputConnection(endPos,tempConnection.lineObject);
             EditorState.addConnection(tempConnection);
             EditorState.Nodes[tempConnection.input.uuid].nodeFunction.setInput(EditorState.Nodes[tempConnection.output].nodeFunction,tempConnection.input.index);
-            console.log(EditorState.ASTRoot.resolve());
+            EditorState.ASTRoot.resolve();
         }
         EditorState.isConnecting = false;
         removeMouseOnListener(EditorState.htmlContainer);
@@ -216,6 +217,6 @@ function disableSelect(event){
     event.preventDefault();
 }
 
-export function shittyLine(begPos,endPos){
+export function createLine(begPos,endPos){
     return new d3Line(d3.select("#connections"), begPos, endPos);
 }
