@@ -39,7 +39,6 @@ class ConstantNode extends React.Component<NodeProps> {
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
-        
         this.dragTarget.addEventListener('contextmenu',(e)=>{
             e.stopPropagation();
         })

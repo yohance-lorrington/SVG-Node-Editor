@@ -1,4 +1,4 @@
-import {selectContainer} from './UIinteractions';
+import {selectContainer,createLine} from './UIinteractions';
 import ASTNode from './Nodes/NodeParts/ASTNode';
 /**
  * This file creates interfaces for all the differen types of information the editor has to keep track of. 
@@ -127,6 +127,44 @@ export function initNodeState(){
         nodeFunction: this.ASTNode
     }
 }
+export function connectNodes(inputConnection:InputConnection,UUIDofNode2:string){
+    let node1 = EditorState.Nodes[inputConnection.uuid];
+    let node2 = EditorState.Nodes[UUIDofNode2];
+    if(node1 != null && node2 != null){
+        let node_1_Inputs = EditorState.Nodes[inputConnection.uuid].inputs;
+       
+        EditorState.removeInputConnection(inputConnection);
+        let connection = new ConnectionState();
+        if(typeof node_1_Inputs != "undefined"){
+            let endPos = generateOutputPosition(node2);       
+            let begPos = generateInputPosition(node1,inputConnection.index)
+            connection.input = inputConnection;
+            connection.output  = UUIDofNode2;
+            connection.lineObject = createLine(begPos,endPos);
+
+            EditorState.addConnection(connection);
+            EditorState.Nodes[inputConnection.uuid].nodeFunction.setInput(EditorState.Nodes[UUIDofNode2].nodeFunction,inputConnection.index);
+        
+        }
+
+    }
+}
+export function deleteNode(NodeUUID){
+    let node1 = EditorState.Nodes[NodeUUID];
+
+    if(node1 != null){
+        let node_1_Inputs = node1.inputs;
+        if(typeof node_1_Inputs != "undefined"){
+            EditorState.removeAllInputConnections(NodeUUID);
+            EditorState.removeOutputConnections(NodeUUID);
+
+            delete EditorState.Nodes[NodeUUID];
+        }
+
+    }
+
+}
+
 export class EditorStateClass{
     public Nodes:any;
     private _beganOnInput:boolean;
@@ -173,13 +211,21 @@ export class EditorStateClass{
     findInputConnection(inputConnection:InputConnection){
         return this._connections.get(this.hash(inputConnection));
     }
+    removeAllInputConnections(UUID:string){
+        let numInputs = this.Nodes[UUID].inputs;
+        //need to check if undefined 
+        if(typeof numInputs != "undefined"){
+            for(let i:number = 0; i < numInputs; ++i){
+                this.removeInputConnection({uuid:UUID,index:i})
+            }
+        }
+    }
     removeInputConnection(inputConnection:InputConnection){
         let connection = this.findInputConnection(inputConnection);
         if(!!connection){ 
             connection.lineObject.removeLine();
             this._connections.delete(this.hash(connection.input));
             this.Nodes[connection.input.uuid].nodeFunction.resetInput(connection.input.index);
-            console.log(this.ASTRoot.resolve());
         } 
     }
     removeOutputConnections(outputUUID:string){
@@ -219,10 +265,7 @@ export class EditorStateClass{
         for(let inputconnectionHashed of outputsToUpdate){
             let connection =this._connections.get(inputconnectionHashed);
             if( connection!= null){
-                let point ={
-                    x: parentNode.root.pos.x -  parentNode.output.ofst.x,
-                    y: parentNode.root.pos.y - parentNode.output.ofst.y
-                }
+                let point = generateOutputPosition(parentNode);
                 connection.lineObject.changeEndPoint(point);
             }
         }
@@ -237,10 +280,7 @@ export class EditorStateClass{
         for(let inputconnectionHashed of inputsToUpdate){
             let connectionObject = this._connections.get(inputconnectionHashed);
             if(connectionObject != null){ //probably a stupid check 
-                let point ={
-                    x:  parentNode.root.pos.x -  inputs[connectionObject.input.index].ofst.x ,
-                    y: parentNode.root.pos.y - inputs[connectionObject.input.index].ofst.y
-                }
+                let point = generateInputPosition(parentNode,connectionObject.input.index);
                 connectionObject.lineObject.changeBeginPoint(point);
             }
     
@@ -248,6 +288,19 @@ export class EditorStateClass{
     }
 
 }
+function generateInputPosition(node,index){
+    return {
+        x: node.root.pos.x -  node.inputs[index].ofst.x,
+        y: node.root.pos.y - node.inputs[index].ofst.y
+    }
+}
+function generateOutputPosition(node){
+    return {
+        x: node.root.pos.x -  node.output.ofst.x,
+        y: node.root.pos.y - node.output.ofst.y
+    }
+}
 export const editorUI =  new UITransform(1,0,0);
 
 export const EditorState = new EditorStateClass();
+

@@ -5,7 +5,7 @@ import {d3Zoom} from '../UIinteractions';
 import * as uuidv4 from 'uuid/v4';
 import EditorBG from './EditorBG';
 import ContextMenu from './ContextMenu';
-
+import {connectNodes} from '../EditorStates'
 import DisplayNode from '../Nodes/DisplayNode';
 import AddNode from '../Nodes/AddNode';
 import SubtractNode from '../Nodes/SubtractNode';
@@ -36,6 +36,18 @@ const NodeEditor: FunctionComponent = ()=>{
         {
             type: 'ConstantNode',
             top: 100,
+            left: 50,
+            key: uuidv4()
+        }, 
+        {
+            type: 'AddNode',
+            top: 200,
+            left: 50,
+            key: uuidv4()
+        },        
+        {
+            type: 'SubtractNode',
+            top: 300,
             left: 50,
             key: uuidv4()
         }
@@ -93,6 +105,7 @@ const NodeEditor: FunctionComponent = ()=>{
         }
         })
     }
+    useEffect(()=>{connectNodes({uuid:nodeList[2].key,index:0},nodeList[1].key)});
     return (
         <NodeProvider value={{nodeList: nodeList, setNodeList: setNodeList}}>
         <EditorBG ref={ref=>this.editor = ref}>

@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as enzyme from 'enzyme';
-import Editor from "../src/componenets/NodeEditor/Editor/Editor";
+import Editor from "../src/componenets/NodeEditor/Editor/EditorBG"
 
 describe('<Editor/>',()=>{
     test('it does a render :)',()=>{

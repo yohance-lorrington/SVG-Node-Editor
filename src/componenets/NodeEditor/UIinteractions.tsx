@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 
-import {editorUI,EditorState,ConnectionState,EditorStateClass} from './EditorStates';
+import {editorUI,EditorState,ConnectionState,deleteNode,EditorStateClass} from './EditorStates';
+
 /**
  * This file contains d3 functionality tailored towards our specific use case. 
  * It exposes simple functions for enabling d3's user interaction.
@@ -55,7 +56,7 @@ export function d3Drag(){
     d3.select(this.handle.current).call(drag);
 }
 // Line interface for creating and dynamically changing a line's start and end point.
-class d3Line {
+export class d3Line {
     private line;
     constructor(container, beginPos, endPos){
         this.line = container.append("line")
@@ -214,4 +215,8 @@ function removeMouseOnListener(htmlContainer){
 }
 function disableSelect(event){
     event.preventDefault();
+}
+
+export function createLine(begPos,endPos){
+    return new d3Line(d3.select("#connections"), begPos, endPos);
 }

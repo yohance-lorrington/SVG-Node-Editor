@@ -45,10 +45,3 @@ describe("ASTNode getters and setters",()=>{
         expect(output.getErrors()[index]).toBe(false);
     });
 });
-
-describe('what happens ',()=>{
-    test('big words',()=>{
-        let node = new ASTNode(null,null);
-        expect(node).toThrowError();
-    })
-});

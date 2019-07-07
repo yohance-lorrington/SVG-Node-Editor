@@ -77,6 +77,7 @@ export function handleConnection(index){
             x: referencePositon.x - inputOffset.x,
             y: referencePositon.y - inputOffset.y
         };
+        // generateNodeInputNode.bind(this)(this.uuid);
         inputDraw.bind(this)(inputPosition,index);
     }
 }

@@ -5,7 +5,6 @@ import {d3Drag} from '../UIinteractions';
 import {createInputs, createOutput} from './NodeParts/NodeHelpers';
 import {initNodeState, EditorState} from '../EditorStates';
 
-
 import Node from './NodeParts/Node';
 import Title from './NodeParts/Title';
 import NodeProps from './NodeParts/NodeProps';
