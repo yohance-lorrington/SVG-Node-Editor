@@ -105,7 +105,7 @@ const NodeEditor: FunctionComponent = ()=>{
         }
         })
     }
-    useEffect(()=>{connectNodes({uuid:nodeList[2].key,index:0},nodeList[1].key)});
+    useEffect(()=>{connectNodes({uuid:nodeList[2].key,index:0},nodeList[1].key)},[]);
     return (
         <NodeProvider value={{nodeList: nodeList, setNodeList: setNodeList}}>
         <EditorBG ref={ref=>this.editor = ref}>

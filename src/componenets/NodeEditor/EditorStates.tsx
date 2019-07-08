@@ -144,7 +144,7 @@ export function connectNodes(inputConnection:InputConnection,UUIDofNode2:string)
 
             EditorState.addConnection(connection);
             EditorState.Nodes[inputConnection.uuid].nodeFunction.setInput(EditorState.Nodes[UUIDofNode2].nodeFunction,inputConnection.index);
-        
+            EditorState.ASTRoot.resolve();
         }
 
     }
@@ -215,7 +215,7 @@ export class EditorStateClass{
         let numInputs = this.Nodes[UUID].inputs;
         //need to check if undefined 
         if(typeof numInputs != "undefined"){
-            for(let i:number = 0; i < numInputs; ++i){
+            for(let i:number = 0; i < numInputs.length; ++i){
                 this.removeInputConnection({uuid:UUID,index:i})
             }
         }
@@ -223,9 +223,12 @@ export class EditorStateClass{
     removeInputConnection(inputConnection:InputConnection){
         let connection = this.findInputConnection(inputConnection);
         if(!!connection){ 
-            connection.lineObject.removeLine();
+            if(!!connection.lineObject)
+                connection.lineObject.removeLine();
+            
             this._connections.delete(this.hash(connection.input));
             this.Nodes[connection.input.uuid].nodeFunction.resetInput(connection.input.index);
+            this.ASTRoot.resolve()
         } 
     }
     removeOutputConnections(outputUUID:string){
