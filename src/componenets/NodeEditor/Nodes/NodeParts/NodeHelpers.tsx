@@ -51,7 +51,7 @@ export function createOutputWithRange(structure){
         </div>
     )
 }
-export function createOutputWithField(structure){
+export function createOutputWithField(){
     this.outRef = createRef();
     this.output = (
         <div className="output">
@@ -59,6 +59,16 @@ export function createOutputWithField(structure){
             <div onMouseUp={handleConnection.bind(this,null)} onMouseDown={handleConnection.bind(this,null)} ref={this.outRef} className="out connector"></div>
         </div>
     )
+}
+export function contextMenu(){
+    
+    console.log(this.uuid)
+    console.log(EditorState.rootID);
+    if(this.uuid == EditorState.rootID){
+        EditorState.currentNode = undefined;
+        return;
+    }
+    EditorState.currentNode = this.uuid;
 }
 //This handles what happens when a user begins or ends a connection, the connection drawing state is controlled by the Editor's state as that is where the connections are stored. 
 export function handleConnection(index){

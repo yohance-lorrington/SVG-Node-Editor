@@ -2,7 +2,7 @@ import * as React from "react";
 import {createRef} from 'react';
 
 import {d3Drag} from '../UIinteractions';
-import {createOutputWithRange} from './NodeParts/NodeHelpers';
+import {createOutputWithRange, contextMenu} from './NodeParts/NodeHelpers';
 import {initNodeState, EditorState} from '../EditorStates';
 
 
@@ -39,10 +39,10 @@ class RangeNode extends React.Component<NodeProps> {
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
-        
-        this.dragTarget.addEventListener('contextmenu',(e)=>{
-            e.stopPropagation();
-        })
+        this.dragTarget.addEventListener('contextmenu',contextMenu.bind(this));
+    }
+    componentWillUnmount(){
+        this.dragTarget.removeEventListener('contextmenu',contextMenu.bind(this));
     }
     
     setValue(value: number){

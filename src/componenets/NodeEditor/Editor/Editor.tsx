@@ -5,7 +5,8 @@ import {d3Zoom} from '../UIinteractions';
 import * as uuidv4 from 'uuid/v4';
 import EditorBG from './EditorBG';
 import ContextMenu from './ContextMenu';
-import {connectNodes} from '../EditorStates'
+import NodeMenu from './NodeMenu';
+
 import DisplayNode from '../Nodes/DisplayNode';
 import AddNode from '../Nodes/AddNode';
 import SubtractNode from '../Nodes/SubtractNode';
@@ -18,20 +19,26 @@ import ModulusNode from '../Nodes/ModulusNode';
 import ExponentNode from '../Nodes/ExponentNode';
 
 import {EditorNode, NodeProvider, NodeConsumer} from './EditorContext';
+import { EditorState } from '../EditorStates';
 
 //UI composed inside of SVG container to more easily handle complex transformations, such as zooming and panning.
 const NodeEditor: FunctionComponent = ()=>{
     useEffect(d3Zoom.bind(this, true)); //enables panning and zooming via d3's zoom functionality, also updates the editor's state(non-react incase it needs to be used with a different front end solution)
     useEffect(()=>{
-        this.svg.addEventListener('contextmenu', showContextmenu);
-        this.editor.addEventListener('click', hideContextMenu)
+        this.svg.addEventListener('contextmenu', showContextmenu, false);
+        this.editor.addEventListener('click', hideContextMenu, false);
+        return (()=>{
+            this.svg.removeEventListener('contextmenu', showContextmenu);
+            this.editor.removeEventListener('click', hideContextMenu);
+        });
     });
+    let rootID = uuidv4();
     let [nodeList,setNodeList] = useState<Array<EditorNode>>([
         {
             type: 'DisplayNode',
-            top: 100,
-            left: window.innerWidth-200,
-            key: uuidv4()
+            top: 150,
+            left:400,
+            key: rootID
         },
         {
             type: 'ConstantNode',
@@ -41,18 +48,17 @@ const NodeEditor: FunctionComponent = ()=>{
         }, 
         {
             type: 'AddNode',
-            top: 200,
-            left: 50,
+            top: 150,
+            left: 180,
             key: uuidv4()
         },        
         {
-            type: 'SubtractNode',
-            top: 300,
+            type: 'ConstantNode',
+            top: 200,
             left: 50,
             key: uuidv4()
         }
     ]);
-    
     let visible = false;
     let ctxPos = {
         x: 0,
@@ -61,23 +67,43 @@ const NodeEditor: FunctionComponent = ()=>{
     let getCtxPos = ()=>{
         return ctxPos;
     }
-    let showMenu = state => {
+    let showAddMenu = state => {
         this.ctxMenu.style.display = state ? "block" : "none";
+
+    }
+    let showNodeMenu = state =>{
+        this.nodeMenu.style.display = state ? "block" : "none";
     }
     let showContextmenu = (e)=>{
         e.preventDefault();
+        
+        showAddMenu(false);
+        showNodeMenu(false);
         ctxPos.x = e.clientX;
         ctxPos.y = e.clientY;
         this.ctxMenu.style.left = `${ctxPos.x}px`;
         this.ctxMenu.style.top = `${ctxPos.y}px`;
+        this.nodeMenu.style.left = `${ctxPos.x}px`;
+        this.nodeMenu.style.top = `${ctxPos.y}px`;
         visible = true;
-        showMenu(true);
+        if(e.target.id == "editor" || e.target.id == "container"){
+            EditorState.currentNode = undefined;
+        }
+        if( !EditorState.currentNode){
+            showAddMenu(true);
+            showNodeMenu(false);
+            console.log('not a node')
+        }
+        if(EditorState.currentNode){
+            showNodeMenu(true);
+            showAddMenu(false);
+            console.log('node')
+        }
     }
     let hideContextMenu = (e)=>{
-        if(visible && !(e.target.id == 'ctxSearch')){
-            showMenu(false);
-            visible = false;
-        }
+            EditorState.currentNode = undefined
+            showAddMenu(false);
+            showNodeMenu(false);
     }
     let createNodes = (value)=>{
         return value.nodeList.map((node)=>{
@@ -105,14 +131,14 @@ const NodeEditor: FunctionComponent = ()=>{
         }
         })
     }
-    useEffect(()=>{connectNodes({uuid:nodeList[2].key,index:0},nodeList[1].key)});
+    
     return (
         <NodeProvider value={{nodeList: nodeList, setNodeList: setNodeList}}>
         <EditorBG ref={ref=>this.editor = ref}>
             <svg id="editor"  ref={svg => this.svg = svg} width="100%" height="100%" >
                 <g width="100%" height="100%" ref={ui => this.ui = ui}>
                     <g width="100%" height="100%" id="connections"></g>
-                    <foreignObject width="100%" height="100%" style={{overflow: 'visible'}}>
+                    <foreignObject id="container" width="100%" height="100%" style={{overflow: 'visible'}}>
                         <NodeConsumer>
                             {value=>createNodes(value)}
                         </NodeConsumer>
@@ -120,6 +146,7 @@ const NodeEditor: FunctionComponent = ()=>{
                 </g>
             </svg>
         <ContextMenu getPos={getCtxPos} ref={ctxMenu => this.ctxMenu = ctxMenu}/>
+        <NodeMenu ref={nodeMenu=>this.nodeMenu = nodeMenu}/>
         </EditorBG>
         </NodeProvider>
     );

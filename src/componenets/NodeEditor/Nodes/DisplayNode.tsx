@@ -2,9 +2,8 @@ import * as React from "react";
 import {createRef} from 'react';
 
 import {d3Drag} from '../UIinteractions';
-import {createInputOnly, handleConnection, removeInputConnection} from './NodeParts/NodeHelpers';
+import {createInputOnly, handleConnection, removeInputConnection, contextMenu} from './NodeParts/NodeHelpers';
 import {initNodeState, EditorState} from '../EditorStates';
-
 
 import Node from './NodeParts/Node';
 import Title from './NodeParts/Title';
@@ -31,27 +30,30 @@ class DisplayNode extends React.Component<NodeProps,{value: number}> {
             value: 0
         }
         this.title = 'Display';
-        let inputs:Array<ASTNode> = new Array<ASTNode>(1)
+        let inputs:Array<ASTNode> = new Array<ASTNode>(1);
         inputs[0] = new ASTNode(null,()=>0);
         this.ASTNode = new ASTNode(inputs, function(){
             this.setState({value: inputs[0].resolve()});
         }.bind(this));
+
         EditorState.ASTRoot = this.ASTNode;
         createInputOnly.bind(this)();
+        EditorState.rootID = this.uuid;
     }
 
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
         
-        this.dragTarget.addEventListener('contextmenu',(e)=>{
-            e.stopPropagation();
-        })
+        this.dragTarget.addEventListener('contextmenu',contextMenu.bind(this));
         EditorState.ASTRoot.resolve();
+    }
+    componentWillUnmount(){
+        this.dragTarget.removeEventListener('contextmenu',contextMenu.bind(this));
     }
     render(){
         return (
-            <Node width={100} singular ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
+            <Node width={150} singular ref={dragTarget => this.dragTarget = dragTarget} style={{ top: `${this.props.top}px`, left:  `${this.props.left}px` }}>
                 <Title ref={this.handle} title={this.title}/>
                 
                 <div className="connections">

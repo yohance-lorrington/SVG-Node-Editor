@@ -2,8 +2,8 @@ import * as React from "react";
 import {createRef} from 'react';
 
 import {d3Drag} from '../UIinteractions';
-import {createInputs, createOutput} from './NodeParts/NodeHelpers';
-import {initNodeState, EditorState} from '../EditorStates';
+import {createInputs, createOutput, contextMenu} from './NodeParts/NodeHelpers';
+import {initNodeState} from '../EditorStates';
 
 
 import Node from './NodeParts/Node';
@@ -49,11 +49,10 @@ class ExponentNode extends React.Component<NodeProps> {
     componentDidMount(){
         d3Drag.bind(this)();
         initNodeState.bind(this)();
-        this.dragTarget.addEventListener('contextmenu',(e)=>{
-            e.stopPropagation();
-            e.preventDefault();
-        });
-        
+        this.dragTarget.addEventListener('contextmenu',contextMenu.bind(this));
+    }
+    componentWillUnmount(){
+        this.dragTarget.removeEventListener('contextmenu',contextMenu.bind(this));
     }
     render(){
         return (
