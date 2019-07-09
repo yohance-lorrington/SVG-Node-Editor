@@ -4,6 +4,7 @@ import {createRef} from 'react';
 import {EditorState} from '../../EditorStates' 
 import {inputDraw, outputDraw} from '../../UIinteractions';
 
+
 import RangeInput from './RangeInput';
 import ConstantInput from './ConstantInput';
 /**
@@ -15,6 +16,7 @@ import ConstantInput from './ConstantInput';
 //The following functions initialize refs along with the actual dom elements for use in nodes.
 export function createInputs(structure) {
     this.inpRefs = [];
+   
     this.input = structure.inputs.map((name, i)=>{
         this.inpRefs.push(createRef());
         return (
@@ -51,7 +53,7 @@ export function createOutputWithRange(structure){
         </div>
     )
 }
-export function createOutputWithField(structure){
+export function createOutputWithField(){
     this.outRef = createRef();
     this.output = (
         <div className="output">
@@ -60,9 +62,19 @@ export function createOutputWithField(structure){
         </div>
     )
 }
+export function contextMenu(){
+    
+    console.log(this.uuid)
+    
+    if(this.uuid == this.mainEditor.rootID){
+        this.mainEditor.currentNode = undefined;
+        return;
+    }
+    this.mainEditor.currentNode = this.uuid;
+}
 //This handles what happens when a user begins or ends a connection, the connection drawing state is controlled by the Editor's state as that is where the connections are stored. 
 export function handleConnection(index){
-    let parent = EditorState.Nodes[this.uuid];
+    let parent = this.mainEditor.Nodes[this.uuid];
     let referencePositon = parent.root.pos;
     if(index===null){
         let outputOffset = parent.output.ofst;
@@ -83,8 +95,9 @@ export function handleConnection(index){
 }
 
 export function removeInputConnection(index){
-    EditorState.removeInputConnection({uuid:this.uuid,index:index});
+    
+    this.mainEditor.removeInputConnection({uuid:this.uuid,index:index});
 }
 export function removeOutputConnections(){
-    EditorState.removeOutputConnections(this.uuid);
+    this.mainEditor.removeOutputConnections(this.uuid);
 }

@@ -6,14 +6,21 @@ import * as uuidv4 from 'uuid/v4';
 import NodeList from './EditorContext';
 import styled from 'styled-components';
 
-const CtxMenu = styled.div`
+export const CtxMenu = styled.div`
     box-sizing: border-box;
     padding: 10px 15px;
     width: 200px;
     position: absolute;
-    border-radius: 4px;
+    border-radius: 2px;
     background: rgba(0.4,0.4,0.4,0.8);
     display: none;
+`;
+export const MenuItem = styled.p`
+    padding: 5px 0;
+    cursor: pointer;
+    color: white;
+    margin: 0;
+    border-bottom: 1px solid #222;
 `;
 const Search = styled.input`
     width: 170px;
@@ -30,13 +37,6 @@ const Search = styled.input`
         outline: none;
     }
 `;
-const MenuItem = styled.p`
-    padding: 5px 0;
-    cursor: pointer;
-    color: white;
-    margin: 0;
-    border-bottom: 1px solid #222;
-`
 interface ContextMenuProps{
     getPos: Function
 }
@@ -54,7 +54,7 @@ let nodeArray = [
         name: 'Add'
     },
     {
-        type: 'Subtractnode',
+        type: 'SubtractNode',
         name: 'Subtract'
     },
     {

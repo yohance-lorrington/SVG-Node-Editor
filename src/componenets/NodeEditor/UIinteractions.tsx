@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-import {editorUI,EditorState,ConnectionState,deleteNode,EditorStateClass} from './EditorStates';
+import {editorUI,ConnectionState,EditorState,EditorStateClass} from './EditorStates';
 
 /**
  * This file contains d3 functionality tailored towards our specific use case. 
@@ -8,6 +8,7 @@ import {editorUI,EditorState,ConnectionState,deleteNode,EditorStateClass} from '
  */
 
 // Enables zooming and panning using the middle mouse button and scroll wheel when called upon a dom element.
+
 export function d3Zoom(isEditor){
     const zoom = d3.zoom()
         .filter(function(){
@@ -43,10 +44,10 @@ export function selectContainer(){
 // Enables dragging behaviour via left click and drag. Used as above.
 export function d3Drag(){
     let dragged = ()=> {
-        let state = EditorState.Nodes[this.uuid];
+        let state = this.mainEditor.Nodes[this.uuid];
         state.root.pos.x = (d3.event.sourceEvent.x-d3.event.subject.x-editorUI.x)/editorUI.scale;
         state.root.pos.y = (d3.event.sourceEvent.y-d3.event.subject.y-editorUI.y)/editorUI.scale;
-        EditorState.updateConnectionLinesForNode(this.uuid);
+        this.mainEditor.updateConnectionLinesForNode(this.uuid);
         div.style('left', `${state.root.pos.x}px`);
         div.style('top', `${state.root.pos.y}px`);
     }
@@ -90,64 +91,73 @@ export class d3Line {
 // Connection drawing state when beginning from a input socket
 export function inputDraw(beginPos,index:number){
     // A new connection is being formed
-    if(!EditorState.isConnecting ){
+    
+    if(!this.mainEditor.isConnecting ){
         let newConnection = new ConnectionState();
         newConnection.input = {uuid:this.uuid,index:index};
-        newConnection.lineObject = drawInputConnection(beginPos,EditorState.htmlContainer,()=>{clearLines(newConnection,EditorState);});
-        EditorState.push(newConnection);
-        EditorState.beganOnInput = true;
-        EditorState.isConnecting = true;
+        newConnection.lineObject = drawInputConnection(beginPos,this.mainEditor.htmlContainer,()=>{clearLines(newConnection,EditorState);});
+        this.mainEditor.push(newConnection);
+        this.mainEditor.beganOnInput = true;
+        this.mainEditor.isConnecting = true;
+    
+        this.context.modifyEditor(this.mainEditor);
+
     }
     // A connection exists and needs to either be discarded or saved.
     else{
-        
-        let tempConnection = EditorState.peekLastConnection();
+
+        let tempConnection = this.mainEditor.peekLastConnection();
         tempConnection.input = {uuid:this.uuid, index: index};
         // If a connection is made between two inputs or is connecting to the same node it started from, DISCARD the connection.
-        if(EditorState.beganOnInput || tempConnection.isSelfReferring()){
-            EditorState.getLastConnection().lineObject.removeLine();
+        if(this.mainEditor.beganOnInput || tempConnection.isSelfReferring()){
+            this.mainEditor.getLastConnection().lineObject.removeLine();
         }
         // If its a valid connection create a complete connection object and store it in the Editor state.
         else{
-            tempConnection = EditorState.getLastConnection();
+            tempConnection = this.mainEditor.getLastConnection();
             tempConnection.lineObject = endInputConnection(beginPos,tempConnection.lineObject);            
-            EditorState.addConnection(tempConnection);
-            EditorState.Nodes[tempConnection.input.uuid].nodeFunction.setInput(EditorState.Nodes[tempConnection.output].nodeFunction,tempConnection.input.index);
-            EditorState.ASTRoot.resolve();
+            this.mainEditor.addConnection(tempConnection);
+            this.mainEditor.Nodes[tempConnection.input.uuid].nodeFunction.setInput(this.mainEditor.Nodes[tempConnection.output].nodeFunction,tempConnection.input.index);
+            this.mainEditor.ASTRoot.resolve();
         }
-        EditorState.isConnecting = false;
-        removeMouseOnListener(EditorState.htmlContainer);
+        this.mainEditor.isConnecting = false;
+        this.context.modifyEditor(this.mainEditor);
+        removeMouseOnListener(this.mainEditor.htmlContainer);
     } 
 }
 // Connection drawing state when beginning from a output socket
 export function outputDraw(endPos){
     // A new connection is being formed
-    if(!EditorState.isConnecting){
+
+    if(!this.mainEditor.isConnecting){
         let newConnection = new ConnectionState();
         newConnection.output = this.uuid;
-        newConnection.lineObject = drawOutputConnection(endPos,EditorState.htmlContainer,()=>{clearLines(newConnection,EditorState);});
-        EditorState.push(newConnection);
-        EditorState.beganOnInput = false;
-        EditorState.isConnecting = true;
+        newConnection.lineObject = drawOutputConnection(endPos,this.mainEditor.htmlContainer,()=>{clearLines(newConnection,EditorState);});
+        this.mainEditor.push(newConnection);
+        this.mainEditor.beganOnInput = false;
+        this.mainEditor.isConnecting = true;
+        this.context.modifyEditor(this.mainEditor);
     }
     // A connection exists and needs to either be discarded or saved.
     else{
-        let tempConnection = EditorState.peekLastConnection();
+      
+        let tempConnection = this.mainEditor.peekLastConnection();
         tempConnection.output = this.uuid;
         // If a connection is made between two outputs or is connecting to the same node it started from, DISCARD the connection.
-        if(!EditorState.beganOnInput || tempConnection.isSelfReferring()){
-            EditorState.getLastConnection().lineObject.removeLine();
+        if(!this.mainEditor.beganOnInput || tempConnection.isSelfReferring()){
+            this.mainEditor.getLastConnection().lineObject.removeLine();
         }
         // If its a valid connection create a complete connection object and store it in the Editor state.
         else{
-            tempConnection = EditorState.getLastConnection();
+            tempConnection = this.mainEditor.getLastConnection();
             tempConnection.lineObject = endOutputConnection(endPos,tempConnection.lineObject);
-            EditorState.addConnection(tempConnection);
-            EditorState.Nodes[tempConnection.input.uuid].nodeFunction.setInput(EditorState.Nodes[tempConnection.output].nodeFunction,tempConnection.input.index);
-            EditorState.ASTRoot.resolve();
+            this.mainEditor.addConnection(tempConnection);
+            this.mainEditor.Nodes[tempConnection.input.uuid].nodeFunction.setInput(this.mainEditor.Nodes[tempConnection.output].nodeFunction,tempConnection.input.index);
+            this.mainEditor.ASTRoot.resolve();
         }
-        EditorState.isConnecting = false;
-        removeMouseOnListener(EditorState.htmlContainer);
+        this.mainEditor.isConnecting = false;
+        this.context.modifyEditor(this.mainEditor);
+        removeMouseOnListener(this.mainEditor.htmlContainer);
     }
 }
 

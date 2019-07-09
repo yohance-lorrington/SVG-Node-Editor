@@ -1,5 +1,7 @@
 import {selectContainer,createLine} from './UIinteractions';
 import ASTNode from './Nodes/NodeParts/ASTNode';
+import * as React from "react";
+
 /**
  * This file creates interfaces for all the differen types of information the editor has to keep track of. 
  * A manual state management is used instead of React's state system as all manipulations are happening directly
@@ -76,8 +78,7 @@ export class ConnectionState {
 
 }
 // Uses the ref's and ASTNode to create the State object for each node. 
-export function initNodeState(){
-    
+export function initNodeState(EditorState){
     if(!EditorState.htmlContainer) 
         EditorState.htmlContainer = selectContainer();
     
@@ -127,43 +128,6 @@ export function initNodeState(){
         nodeFunction: this.ASTNode
     }
 }
-export function connectNodes(inputConnection:InputConnection,UUIDofNode2:string){
-    let node1 = EditorState.Nodes[inputConnection.uuid];
-    let node2 = EditorState.Nodes[UUIDofNode2];
-    if(node1 != null && node2 != null){
-        let node_1_Inputs = EditorState.Nodes[inputConnection.uuid].inputs;
-       
-        EditorState.removeInputConnection(inputConnection);
-        let connection = new ConnectionState();
-        if(typeof node_1_Inputs != "undefined"){
-            let endPos = generateOutputPosition(node2);       
-            let begPos = generateInputPosition(node1,inputConnection.index)
-            connection.input = inputConnection;
-            connection.output  = UUIDofNode2;
-            connection.lineObject = createLine(begPos,endPos);
-
-            EditorState.addConnection(connection);
-            EditorState.Nodes[inputConnection.uuid].nodeFunction.setInput(EditorState.Nodes[UUIDofNode2].nodeFunction,inputConnection.index);
-            EditorState.ASTRoot.resolve();
-        }
-
-    }
-}
-export function deleteNode(NodeUUID){
-    let node1 = EditorState.Nodes[NodeUUID];
-
-    if(node1 != null){
-        let node_1_Inputs = node1.inputs;
-        if(typeof node_1_Inputs != "undefined"){
-            EditorState.removeAllInputConnections(NodeUUID);
-            EditorState.removeOutputConnections(NodeUUID);
-
-            delete EditorState.Nodes[NodeUUID];
-        }
-
-    }
-
-}
 
 export class EditorStateClass{
     public Nodes:any;
@@ -173,6 +137,8 @@ export class EditorStateClass{
     public _connections:Map<string,ConnectionState>;
     private _container:any;
     public ASTRoot: ASTNode;
+    public rootID: string;
+    public currentNode: string;
     constructor(){
         this.Nodes = {};
         this._container = null;
@@ -213,7 +179,7 @@ export class EditorStateClass{
     }
     removeAllInputConnections(UUID:string){
         let numInputs = this.Nodes[UUID].inputs;
-        //need to check if undefined 
+        //need to check if undefined
         if(typeof numInputs != "undefined"){
             for(let i:number = 0; i < numInputs.length; ++i){
                 this.removeInputConnection({uuid:UUID,index:i})
@@ -221,6 +187,7 @@ export class EditorStateClass{
         }
     }
     removeInputConnection(inputConnection:InputConnection){
+
         let connection = this.findInputConnection(inputConnection);
         if(!!connection){ 
             if(!!connection.lineObject)
@@ -228,7 +195,7 @@ export class EditorStateClass{
             
             this._connections.delete(this.hash(connection.input));
             this.Nodes[connection.input.uuid].nodeFunction.resetInput(connection.input.index);
-            this.ASTRoot.resolve()
+            this.ASTRoot.resolve();
         } 
     }
     removeOutputConnections(outputUUID:string){
@@ -239,7 +206,42 @@ export class EditorStateClass{
             this.removeInputConnection(inputconnection);
         }
     }
-
+    deleteNode(NodeUUID:string){
+        let node1 = this.Nodes[NodeUUID];
+    
+        if(node1 != null){
+            let node_1_Inputs = node1.inputs;
+            if(typeof node_1_Inputs != "undefined"){
+                this.removeAllInputConnections(NodeUUID);
+                this.removeOutputConnections(NodeUUID);
+    
+                delete this.Nodes[NodeUUID];
+            }
+        }
+    
+    }
+    connectNodes(inputConnection:InputConnection,UUIDofNode2:string){
+        let node1 = this.Nodes[inputConnection.uuid];
+        let node2 = this.Nodes[UUIDofNode2];
+        if(node1 != null && node2 != null){
+            let node_1_Inputs = this.Nodes[inputConnection.uuid].inputs;
+           
+            if(typeof node_1_Inputs != "undefined"){
+                this.removeInputConnection(inputConnection);
+                let connection = new ConnectionState();
+                let endPos = generateOutputPosition(node2);       
+                let begPos = generateInputPosition(node1,inputConnection.index)
+               
+                connection.input = inputConnection;
+                connection.output  = UUIDofNode2;
+                connection.lineObject = createLine(begPos,endPos);
+    
+                this.addConnection(connection);
+                this.Nodes[inputConnection.uuid].nodeFunction.setInput(this.Nodes[UUIDofNode2].nodeFunction,inputConnection.index);
+                this.ASTRoot.resolve();
+            }
+        }
+    }
 
     get beganOnInput():boolean{
         return this._beganOnInput;
